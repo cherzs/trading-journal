@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Trade - Tractional</title>
+    <meta name="google-signin-client_id" content="{{ google_client_id }}.apps.googleusercontent.com">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body class="gradient-bg text-gray-100">
+    <!-- Navigation -->
+    <nav class="glass-container py-4 px-6 mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="/" class="text-2xl font-bold gradient-text">
+                    <i class="fas fa-chart-line mr-2"></i>Tractional
+                </a>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="{{ url_for('dashboard') }}" class="text-gray-300 hover:text-white transition">Dashboard</a>
+                <a href="{{ url_for('trades') }}" class="text-gray-300 hover:text-white transition">Trades</a>
+                <a href="{{ url_for('add_trade') }}" class="text-white font-medium border-b-2 border-purple-500">Add Trade</a>
+                <a href="{{ url_for('settings') }}" class="text-gray-300 hover:text-white transition">Settings</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{{ url_for('logout') }}" class="text-gray-300 hover:text-white transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+                <button class="md:hidden text-white" id="mobile-menu-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden mt-4" id="mobile-menu">
+            <div class="flex flex-col space-y-3 px-2 pt-2 pb-3">
+                <a href="{{ url_for('dashboard') }}" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Dashboard</a>
+                <a href="{{ url_for('trades') }}" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Trades</a>
+                <a href="{{ url_for('add_trade') }}" class="bg-purple-800 bg-opacity-50 text-white px-3 py-2 rounded-md">Add Trade</a>
+                <a href="{{ url_for('settings') }}" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Settings</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-12">
+        <!-- Page header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold">Add New Trade</h1>
+        </div>
+
+        <!-- Trade Form -->
+        <div class="card">
+            <div class="p-6">
+                <form id="trade-form" action="{{ url_for('add_trade') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <!-- Trade Date -->
+                        <div class="sm:col-span-3">
+                            <label for="date" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                            <input type="date" name="date" id="date" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        </div>
+
+                        <!-- Symbol/Pair -->
+                        <div class="sm:col-span-3">
+                            <label for="symbol" class="block text-sm font-medium text-gray-300 mb-1">Symbol/Pair</label>
+                            <input type="text" name="symbol" id="symbol" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="e.g. BTCUSD, EURUSD, AAPL" required>
+                        </div>
+
+                        <!-- Trade Type -->
+                        <div class="sm:col-span-3">
+                            <label for="trade_type" class="block text-sm font-medium text-gray-300 mb-1">Trade Type</label>
+                            <select id="trade_type" name="trade_type" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                <option value="long">Long</option>
+                                <option value="short">Short</option>
+                            </select>
+                        </div>
+
+                        <!-- Strategy -->
+                        <div class="sm:col-span-3">
+                            <label for="strategy" class="block text-sm font-medium text-gray-300 mb-1">Strategy</label>
+                            <input type="text" name="strategy" id="strategy" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="e.g. Breakout, Support/Resistance" required>
+                        </div>
+
+                        <!-- Entry Price -->
+                        <div class="sm:col-span-2">
+                            <label for="entry_price" class="block text-sm font-medium text-gray-300 mb-1">Entry Price</label>
+                            <input type="number" name="entry_price" id="entry_price" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" step="0.00000001" required>
+                        </div>
+
+                        <!-- Exit Price -->
+                        <div class="sm:col-span-2">
+                            <label for="exit_price" class="block text-sm font-medium text-gray-300 mb-1">Exit Price</label>
+                            <input type="number" name="exit_price" id="exit_price" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" step="0.00000001" required>
+                        </div>
+
+                        <!-- Position Size -->
+                        <div class="sm:col-span-2">
+                            <label for="size" class="block text-sm font-medium text-gray-300 mb-1">Position Size</label>
+                            <input type="number" name="size" id="size" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" step="0.01" required>
+                        </div>
+
+                        <!-- Stop Loss -->
+                        <div class="sm:col-span-3">
+                            <label for="stop_loss" class="block text-sm font-medium text-gray-300 mb-1">Stop Loss</label>
+                            <input type="number" name="stop_loss" id="stop_loss" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" step="0.00000001">
+                        </div>
+
+                        <!-- Take Profit -->
+                        <div class="sm:col-span-3">
+                            <label for="take_profit" class="block text-sm font-medium text-gray-300 mb-1">Take Profit</label>
+                            <input type="number" name="take_profit" id="take_profit" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" step="0.00000001">
+                        </div>
+
+                        <!-- Trade Result -->
+                        <div class="sm:col-span-6">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-300">Trade Result</label>
+                                <div class="text-right">
+                                    <span class="text-lg font-medium" id="pnl_display">0.00</span>
+                                </div>
+                            </div>
+                            <div class="mt-1 flex items-center justify-between">
+                                <div>
+                                    <span class="text-sm text-gray-400">Risk/Reward Ratio:</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium" id="rr_ratio">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="sm:col-span-6">
+                            <label for="notes" class="block text-sm font-medium text-gray-300 mb-1">Notes</label>
+                            <textarea id="notes" name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="What went well? What could be improved? Any observations?"></textarea>
+                        </div>
+
+                        <!-- Screenshot Upload -->
+                        <div class="sm:col-span-6">
+                            <label for="screenshot" class="block text-sm font-medium text-gray-300 mb-1">Chart Screenshot</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-700 border-dashed rounded-md bg-gray-800 bg-opacity-50">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-400">
+                                        <label for="screenshot" class="relative cursor-pointer bg-transparent rounded-md font-medium text-purple-400 hover:text-purple-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500">
+                                            <span>Upload a file</span>
+                                            <input id="screenshot" name="screenshot" type="file" class="sr-only" accept="image/*">
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-5">
+                        <div class="flex justify-end">
+                            <button type="button" id="cancel-button" data-href="{{ url_for('dashboard') }}" class="btn-secondary mr-3">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                Save Trade
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" class="fixed top-4 right-4 z-50"></div>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        document.getElementById('cancel-button').addEventListener('click', function() {
+            window.location.href = this.getAttribute('data-href');
+        });
+    </script>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/google-auth.js') }}"></script>
+</body>
+</html> 

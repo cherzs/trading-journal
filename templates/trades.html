@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Trades - Tractional</title>
+    <meta name="google-signin-client_id" content="{{ google_client_id }}.apps.googleusercontent.com">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body class="gradient-bg text-gray-100">
+    <!-- Navigation -->
+    <nav class="glass-container py-4 px-6 mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="/" class="text-2xl font-bold gradient-text">
+                    <i class="fas fa-chart-line mr-2"></i>Tractional
+                </a>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="/dashboard" class="text-gray-300 hover:text-white transition">Dashboard</a>
+                <a href="/trades" class="text-white font-medium border-b-2 border-purple-500">Trades</a>
+                <a href="/add_trade" class="text-gray-300 hover:text-white transition">Add Trade</a>
+                <a href="/settings" class="text-gray-300 hover:text-white transition">Settings</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/logout" class="text-gray-300 hover:text-white transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+                <button class="md:hidden text-white" id="mobile-menu-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu, toggle classes based on menu state -->
+        <div class="md:hidden hidden mt-4" id="mobile-menu">
+            <div class="flex flex-col space-y-3 px-2 pt-2 pb-3">
+                <a href="/dashboard" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Dashboard</a>
+                <a href="/trades" class="bg-purple-800 bg-opacity-50 text-white px-3 py-2 rounded-md">Trades</a>
+                <a href="/add_trade" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Add Trade</a>
+                <a href="/settings" class="text-gray-300 hover:text-white transition px-3 py-2 rounded-md">Settings</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-12">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-3xl font-bold mb-4 md:mb-0">Your Trades</h1>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Search and Filters -->
+                <div class="flex">
+                    <select id="symbol-filter" class="mr-2 rounded-l-md rounded-r-none border-r-0">
+                        <option value="">All Symbols</option>
+                        {% for symbol in symbols %}
+                        <option value="{{ symbol }}">{{ symbol }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="strategy-filter" class="rounded-r-md rounded-l-none">
+                        <option value="">All Strategies</option>
+                        {% for strategy in strategies %}
+                        <option value="{{ strategy }}">{{ strategy }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <a href="/add_trade" class="btn-primary flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i> Add New Trade
+                </a>
+            </div>
+        </div>
+        
+        <!-- Trades Table -->
+        <div class="card">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Strategy</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>Size</th>
+                            <th>P/L</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trade in trades %}
+                        <tr>
+                            <td>{{ trade.date }}</td>
+                            <td>{{ trade.symbol }}</td>
+                            <td>
+                                {% if trade.trade_type == 'long' %}
+                                <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-full text-xs">Long</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-full text-xs">Short</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ trade.strategy }}</td>
+                            <td>{{ trade.entry_price_formatted }}</td>
+                            <td>{{ trade.exit_price_formatted }}</td>
+                            <td>{{ trade.size }}</td>
+                            <td class="{% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
+                                {{ trade.pnl_formatted }}
+                            </td>
+                            <td>
+                                <div class="flex space-x-2">
+                                    <a href="/trade/{{ trade.id }}" class="text-indigo-400 hover:text-indigo-300" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/edit_trade/{{ trade.id }}" class="text-blue-400 hover:text-blue-300" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="/delete_trade/{{ trade.id }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this trade?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div class="px-6 py-4 flex justify-between items-center border-t border-gray-700">
+                <div class="text-sm text-gray-400">
+                    Showing {{ (page - 1) * per_page + 1 }} to {{ min((page * per_page), total_trades) }} of {{ total_trades }} trades
+                </div>
+                <div class="flex space-x-1">
+                    {% if page > 1 %}
+                    <a href="?page={{ page - 1 }}" class="btn-secondary px-3 py-1 text-sm">
+                        <i class="fas fa-chevron-left mr-1"></i> Prev
+                    </a>
+                    {% endif %}
+                    
+                    <span class="px-3 py-1 text-sm">{{ page }} of {{ total_pages }}</span>
+                    
+                    {% if page < total_pages %}
+                    <a href="?page={{ page + 1 }}" class="btn-secondary px-3 py-1 text-sm">
+                        Next <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if trades|length == 0 %}
+            <div class="p-8 text-center">
+                <div class="text-gray-400 mb-4">
+                    <i class="fas fa-clipboard-list text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-medium mb-2">No trades found</h3>
+                <p class="text-gray-400 mb-4">You haven't recorded any trades yet or none match your current filters.</p>
+                <a href="/add_trade" class="btn-primary inline-block">Record Your First Trade</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+        
+        // Filters functionality
+        document.getElementById('symbol-filter').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        document.getElementById('strategy-filter').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        function applyFilters() {
+            const symbol = document.getElementById('symbol-filter').value;
+            const strategy = document.getElementById('strategy-filter').value;
+            
+            let url = '/trades?';
+            if (symbol) url += 'symbol=' + encodeURIComponent(symbol) + '&';
+            if (strategy) url += 'strategy=' + encodeURIComponent(strategy) + '&';
+            
+            window.location.href = url.endsWith('&') ? url.slice(0, -1) : url;
+        }
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/google-auth.js') }}"></script>
+</body>
+</html> 

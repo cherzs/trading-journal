@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tractional - Trading Journal & Strategy Backtester</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(130deg, #13111C 0%, #1A1625 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #A78BFA, #8B5CF6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .gradient-btn {
+            background: linear-gradient(90deg, #7C3AED 0%, #6D28D9 100%);
+            transition: all 0.3s;
+        }
+        .gradient-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .glow {
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 70% 50%, rgba(124, 58, 237, 0.1) 0%, rgba(31, 41, 55, 0) 70%);
+        }
+    </style>
+</head>
+<body class="font-inter gradient-bg text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-transparent py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <i class="fas fa-chart-line text-purple-500 text-2xl mr-2"></i>
+                        <span class="text-2xl font-bold">Tract<span class="gradient-text">ional</span></span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#features" class="text-gray-300 hover:text-white transition duration-150">Features</a>
+                    <a href="#pricing" class="text-gray-300 hover:text-white transition duration-150">Pricing</a>
+                    <a href="#about" class="text-gray-300 hover:text-white transition duration-150">About</a>
+                    <a href="{{ url_for('login') }}" class="px-4 py-2 rounded-md text-sm font-medium text-white bg-gray-800 bg-opacity-50 hover:bg-opacity-70 border border-gray-700 transition duration-150">Sign In</a>
+                    <a href="{{ url_for('register') }}" class="gradient-btn px-4 py-2 rounded-md text-sm font-medium text-white transition duration-150 glow">Get Started</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-300 hover:text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu, show/hide based on menu state -->
+            <div id="mobile-menu" class="md:hidden hidden pt-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="#features" class="text-gray-300 hover:text-white px-3 py-2 rounded-md">Features</a>
+                    <a href="#pricing" class="text-gray-300 hover:text-white px-3 py-2 rounded-md">Pricing</a>
+                    <a href="#about" class="text-gray-300 hover:text-white px-3 py-2 rounded-md">About</a>
+                    <a href="{{ url_for('login') }}" class="px-3 py-2 rounded-md text-white bg-gray-800 bg-opacity-50 hover:bg-opacity-70 border border-gray-700">Sign In</a>
+                    <a href="{{ url_for('register') }}" class="gradient-btn px-3 py-2 rounded-md text-white mt-2">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
+                <div class="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
+                    <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl lg:leading-tight">
+                        <span class="block">Trading Journal &</span>
+                        <span class="block gradient-text">Strategy Backtester</span>
+                        <span class="block text-2xl mt-2 text-gray-400 font-semibold">for Scalpers</span>
+                    </h1>
+                    <p class="mt-6 text-xl text-gray-300 leading-relaxed">
+                        Improve your trading performance with accurate data analysis. Find the best strategies and increase your win rate.
+                    </p>
+                    <div class="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0 flex flex-wrap gap-4">
+                        <a href="{{ url_for('login') }}" class="gradient-btn inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md text-white glow">
+                            Start Now
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="#features" class="inline-flex items-center justify-center px-6 py-3 border border-gray-700 text-base font-medium rounded-md text-gray-300 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 transition duration-150">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+                <div class="mt-12 lg:mt-0 lg:col-span-6 relative">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-full h-64 bg-purple-900 bg-opacity-20 rounded-full filter blur-3xl"></div>
+                        </div>
+                        <img src="{{ url_for('static', filename='images/dashboard.png') }}" alt="Dashboard Preview" class="relative rounded-lg shadow-2xl border border-gray-800">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 relative overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-purple-900 opacity-10 rounded-full filter blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-900 opacity-10 rounded-full filter blur-3xl"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <span class="inline-block px-3 py-1 text-sm font-semibold text-purple-400 bg-purple-800 bg-opacity-30 rounded-full mb-3">Features</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+                    Everything You Need for <span class="gradient-text">Trading Success</span>
+                </h2>
+                <p class="max-w-2xl mx-auto text-xl text-gray-400">
+                    Our platform is designed specifically for traders who need fast, accurate analysis of their performance
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Track Record</h3>
+                    <p class="text-gray-400">
+                        Record all trades with details including entry, exit, strategy, and chart screenshots.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-pie text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Strategy Analysis</h3>
+                    <p class="text-gray-400">
+                        Evaluate which strategies are profitable with performance breakdowns by technique.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-bar text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Visual Statistics</h3>
+                    <p class="text-gray-400">
+                        View win rate and performance through interactive charts for deeper insights.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-alt text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Weekly Report</h3>
+                    <p class="text-gray-400">
+                        Get weekly reports for periodic evaluation and strategy improvements.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-file-export text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Export & Import</h3>
+                    <p class="text-gray-400">
+                        Export data to CSV or Excel for advanced analysis or backup your trading data.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl p-6 border border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-purple-800 bg-opacity-30 flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Mobile Friendly</h3>
+                    <p class="text-gray-400">
+                        Access your trading journal from anywhere with a responsive design that supports all devices.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-16 text-center">
+                <a href="{{ url_for('register') }}" class="gradient-btn inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md text-white glow">
+                    Start Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Preview Section -->
+    <section class="py-20 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-block px-3 py-1 text-sm font-semibold text-purple-400 bg-purple-800 bg-opacity-30 rounded-full mb-3">Preview</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+                    See the <span class="gradient-text">App in Action</span>
+                </h2>
+                <p class="max-w-2xl mx-auto text-xl text-gray-400">
+                    Modern and intuitive design to simplify your trading analysis
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="rounded-xl overflow-hidden border border-gray-800 shadow-2xl card-hover">
+                        <img src="https://via.placeholder.com/800x500?text=Dashboard" alt="Dashboard" class="w-full h-auto">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Comprehensive Dashboard</h3>
+                    <p class="text-gray-300 text-lg mb-6">
+                        Our dashboard provides a complete overview of your trading performance with a focus on key metrics.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">Statistik P&L, win rate, and profit factor in one view</p>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">Daily, weekly, and monthly performance charts</p>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">Best and worst strategy analysis for decision-making</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-24">
+                <div class="order-2 lg:order-1">
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Detailed Trade Analysis</h3>
+                    <p class="text-gray-300 text-lg mb-6">
+                        See each trade detail with screenshots and analysis to understand success patterns.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">Chart screenshots with entry and exit point notations</p>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">Notes for reflection and learning from each trade</p>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                <i class="fas fa-check text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="ml-3 text-gray-400">R:R ratio, trade risk, and return on investment metrics</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <div class="rounded-xl overflow-hidden border border-gray-800 shadow-2xl card-hover">
+                        <img src="https://via.placeholder.com/800x500?text=Trade+Analysis" alt="Trade Analysis" class="w-full h-auto">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Made by Scalpers Section -->
+    <section class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:text-center">
+                <h2 class="text-base text-green-500 font-semibold tracking-wide uppercase">For Scalpers</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                    Made by Trader for Traders
+                </p>
+                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                    We understand the unique needs of scalpers because we are scalpers too. This platform is specifically designed to meet the needs of fast trading with accurate analysis.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Screenshots -->
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:text-center">
+                <h2 class="text-base text-green-500 font-semibold tracking-wide uppercase">Preview</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                    See the App in Action
+                </p>
+            </div>
+            <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3">
+                <!-- Screenshot 1 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="https://via.placeholder.com/600x400?text=Dashboard" alt="Dashboard" class="w-full h-auto">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Comprehensive Dashboard</h3>
+                        <p class="mt-2 text-base text-gray-500">View all important trading metrics in one screen.</p>
+                    </div>
+                </div>
+
+                <!-- Screenshot 2 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="https://via.placeholder.com/600x400?text=Trade+Input" alt="Trade Input Form" class="w-full h-auto">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Trade Input Form</h3>
+                        <p class="mt-2 text-base text-gray-500">Input trades quickly and easily.</p>
+                    </div>
+                </div>
+
+                <!-- Screenshot 3 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="https://via.placeholder.com/600x400?text=Strategy+Analysis" alt="Strategy Analysis" class="w-full h-auto">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">In-Depth Strategy Analysis</h3>
+                        <p class="mt-2 text-base text-gray-500">Discover which strategies are most profitable.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 relative overflow-hidden">
+        <div class="absolute -top-40 left-1/2 w-96 h-96 bg-purple-900 opacity-10 rounded-full filter blur-3xl"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <span class="inline-block px-3 py-1 text-sm font-semibold text-purple-400 bg-purple-800 bg-opacity-30 rounded-full mb-3">Pricing</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+                    <span class="gradient-text">Packages</span> for Every Trader
+                </h2>
+                <p class="max-w-2xl mx-auto text-xl text-gray-400">
+                    Choose a package that fits your trading needs
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Free Tier -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl overflow-hidden border border-gray-800 card-hover">
+                    <div class="px-6 py-8 border-b border-gray-800">
+                        <h3 class="text-xl font-bold text-white">Free</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-5xl font-extrabold">$0</span>
+                            <span class="ml-1 text-xl text-gray-400">/month</span>
+                        </div>
+                        <p class="mt-4 text-gray-400">For beginner traders who want to try it out.</p>
+                    </div>
+                    <div class="px-6 py-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Max 20 trades/month</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Basic dashboard</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">CSV export</span>
+                            </li>
+                        </ul>
+                        <div class="mt-8">
+                            <a href="{{ url_for('register') }}" class="block w-full py-3 px-4 rounded-md text-center font-medium text-white bg-gray-800 hover:bg-gray-700 transition duration-150 border border-gray-700">Start Free</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Tier -->
+                <div class="bg-gray-900 bg-opacity-70 rounded-xl overflow-hidden border border-purple-800 shadow-xl transform md:-translate-y-4 card-hover relative">
+                    <div class="absolute top-0 inset-x-0 flex justify-center">
+                        <span class="px-3 py-1 text-xs font-bold text-purple-400 bg-purple-900 bg-opacity-60 rounded-b-lg">POPULAR</span>
+                    </div>
+                    <div class="px-6 py-8 border-b border-gray-800 mt-4">
+                        <h3 class="text-xl font-bold text-white">Pro</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-5xl font-extrabold gradient-text">$19</span>
+                            <span class="ml-1 text-xl text-gray-400">/month</span>
+                        </div>
+                        <p class="mt-4 text-gray-400">For active traders serious about improving performance.</p>
+                    </div>
+                    <div class="px-6 py-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Unlimited trades</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">In-depth strategy analysis</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Weekly performance reports</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Export to Excel/PDF</span>
+                            </li>
+                        </ul>
+                        <div class="mt-8">
+                            <a href="{{ url_for('register') }}" class="block w-full py-3 px-4 rounded-md text-center font-medium text-white gradient-btn glow">Start 14-Day Trial</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enterprise Tier -->
+                <div class="bg-gray-900 bg-opacity-50 rounded-xl overflow-hidden border border-gray-800 card-hover">
+                    <div class="px-6 py-8 border-b border-gray-800">
+                        <h3 class="text-xl font-bold text-white">Enterprise</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-5xl font-extrabold">$49</span>
+                            <span class="ml-1 text-xl text-gray-400">/month</span>
+                        </div>
+                        <p class="mt-4 text-gray-400">For trading teams and professional traders.</p>
+                    </div>
+                    <div class="px-6 py-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">All Pro features</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Multi-user access</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">API integration</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-800 bg-opacity-30 flex items-center justify-center mt-1">
+                                    <i class="fas fa-check text-purple-400 text-sm"></i>
+                                </div>
+                                <span class="ml-3 text-gray-300">Priority support</span>
+                            </li>
+                        </ul>
+                        <div class="mt-8">
+                            <a href="{{ url_for('register') }}" class="block w-full py-3 px-4 rounded-md text-center font-medium text-white bg-gray-800 hover:bg-gray-700 transition duration-150 border border-gray-700">Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <p class="max-w-3xl mx-auto text-gray-400 text-lg mb-6">
+                    All packages include technical support and regular updates. Upgrade or downgrade anytime.
+                </p>
+                <div class="inline-flex items-center space-x-2 bg-gray-800 bg-opacity-50 rounded-full px-4 py-2 border border-gray-700">
+                    <i class="fas fa-shield-alt text-purple-400"></i>
+                    <span class="text-gray-300">Secure payment with SSL 256-bit</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-purple-600/10"></div>
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="bg-gray-900 bg-opacity-80 rounded-2xl border border-gray-800 shadow-2xl p-12 backdrop-blur-sm">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white mb-6">
+                        Ready to <span class="gradient-text">Improve</span> Your Trading Performance?
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                        Join thousands of traders who have improved their win rate and profitability with Tractional.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="{{ url_for('register') }}" class="gradient-btn px-8 py-4 rounded-md text-lg font-medium text-white glow">
+                            Register Free
+                        </a>
+                        <a href="#features" class="bg-gray-800 px-8 py-4 rounded-md text-lg font-medium text-white border border-gray-700 hover:bg-gray-700 transition">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <a href="/" class="flex items-center">
+                        <i class="fas fa-chart-line text-purple-500 text-xl mr-2"></i>
+                        <span class="text-xl font-bold gradient-text">Tractional</span>
+                    </a>
+                    <p class="mt-4 text-gray-400">
+                        Trading journal and strategy analysis platform for traders serious about improving performance.
+                    </p>
+                    <div class="mt-6 flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition">
+                            <i class="fab fa-twitter text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition">
+                            <i class="fab fa-instagram text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition">
+                            <i class="fab fa-youtube text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition">
+                            <i class="fab fa-telegram text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Platform</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="#features" class="text-gray-400 hover:text-white transition">Features</a></li>
+                            <li><a href="#pricing" class="text-gray-400 hover:text-white transition">Pricing</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Reviews</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Resources</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Trading Guides</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">API Documentation</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Webinars</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Company</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 pt-8 border-t border-gray-800 text-center">
+                <p class="text-gray-400">&copy; {{ request.date.year if request.date else 2024 }} Tractional. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
