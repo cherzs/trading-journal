@@ -896,24 +896,38 @@ def dashboard():
     profit_factor_change = 0.3  # Example: 0.3 increase in profit factor
     pnl_change = 120.50     # Example: $120.50 increase in P&L
     
-    # Prepare chart data (placeholder data for demonstration)
+    # Prepare chart data
     daily_pnl = {}
-    for trade in trades:
+    cumulative_pnl = {}
+    running_total = 0
+    
+    # Sort trades by date
+    sorted_trades = sorted(trades, key=lambda x: pd.to_datetime(x.get('date', '1970-01-01'), errors='coerce'))
+    
+    for trade in sorted_trades:
         try:
             date = pd.to_datetime(trade.get('date')).strftime('%Y-%m-%d')
             pnl = float(trade.get('pnl', 0))
+            
+            # Daily P&L
             daily_pnl[date] = daily_pnl.get(date, 0) + pnl
+            
+            # Cumulative P&L
+            running_total += pnl
+            cumulative_pnl[date] = running_total
         except:
             continue
     
     # Convert to arrays for Chart.js
-    labels = list(daily_pnl.keys())
-    values = list(daily_pnl.values())
+    dates = list(daily_pnl.keys())
+    daily_values = list(daily_pnl.values())
+    cumulative_values = [cumulative_pnl.get(date, 0) for date in dates]
     
-    # Chart data JSON
+    # Chart data JSON for P&L chart
     chart_data = {
-        'labels': labels,
-        'values': values
+        'dates': dates,
+        'daily_pnl': daily_values,
+        'cumulative_pnl': cumulative_values
     }
     
     # Strategy performance data with safer type handling
@@ -936,8 +950,8 @@ def dashboard():
     
     # Calculate win rates and format for chart
     strategy_data = {
-        'labels': list(strategy_performance.keys()),
-        'win_rates': [round(s['wins'] / s['count'] * 100, 1) if s['count'] > 0 else 0 for s in strategy_performance.values()],
+        'names': list(strategy_performance.keys()),
+        'win_rates': [round((s['wins'] / s['count'] * 100), 1) if s['count'] > 0 else 0 for s in strategy_performance.values()],
         'pnls': [round(s['pnl'], 2) for s in strategy_performance.values()]
     }
     
@@ -949,13 +963,16 @@ def dashboard():
             symbol_performance[symbol] = {'count': 0, 'pnl': 0}
         
         symbol_performance[symbol]['count'] += 1
-        symbol_performance[symbol]['pnl'] += trade.get('pnl', 0)
+        try:
+            pnl = float(trade.get('pnl', 0))
+            symbol_performance[symbol]['pnl'] += pnl
+        except (ValueError, TypeError):
+            pass
     
     # Format for chart
     symbol_data = {
-        'labels': list(symbol_performance.keys()),
-        'counts': [s['count'] for s in symbol_performance.values()],
-        'pnls': [round(s['pnl'], 2) for s in symbol_performance.values()]
+        'symbols': list(symbol_performance.keys()),
+        'pnl_values': [round(s['pnl'], 2) for s in symbol_performance.values()]
     }
     
     # User info for display
@@ -978,9 +995,9 @@ def dashboard():
                                profit_factor_change=0,
                                pnl_change=0,
                                current_date=current_date,
-                               chart_data={"labels": [], "values": []},
-                               strategy_data={"labels": [], "win_rates": [], "pnls": []},
-                               symbol_data={"labels": [], "counts": [], "pnls": []},
+                               chart_data={"dates": [], "daily_pnl": [], "cumulative_pnl": []},
+                               strategy_data={"names": [], "win_rates": [], "pnls": []},
+                               symbol_data={"symbols": [], "pnl_values": []},
                                user=user,
                                google_client_id=app.config['GOOGLE_CLIENT_ID'])
     
