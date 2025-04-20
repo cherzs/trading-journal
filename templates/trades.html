@@ -15,8 +15,9 @@
     <nav class="glass-container py-4 px-6 mb-8">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="/" class="text-2xl font-bold gradient-text">
-                    <i class="fas fa-chart-line mr-2"></i>Tractional
+                <a href="/" class="flex items-center">
+                    <img src="{{ url_for('static', filename='images/logos.png') }}" alt="Logo" class="h-14 w-14 mr-2">
+                    <span class="text-2xl font-bold gradient-text">Tractional</span>
                 </a>
             </div>
             <div class="hidden md:flex space-x-6">
@@ -75,43 +76,45 @@
         </div>
         
         <!-- Trades Table -->
-        <div class="card">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
+        <div class="card overflow-hidden">
+            <div class="overflow-x-auto" style="width: 100%;">
+                <table class="w-full table-auto">
+                    <thead class="bg-gray-800">
                         <tr>
-                            <th>Date</th>
-                            <th>Symbol</th>
-                            <th>Type</th>
-                            <th>Strategy</th>
-                            <th>Entry</th>
-                            <th>Exit</th>
-                            <th>Size</th>
-                            <th>P/L</th>
-                            <th>Actions</th>
+                            <th class="w-24 px-3 py-3 text-left">Date</th>
+                            <th class="w-20 px-3 py-3 text-left">Symbol</th>
+                            <th class="w-16 px-3 py-3 text-left">Type</th>
+                            <th class="w-20 px-3 py-3 text-left">Broker</th>
+                            <th class="w-28 px-3 py-3 text-left">Strategy</th>
+                            <th class="w-20 px-3 py-3 text-left">Entry</th>
+                            <th class="w-20 px-3 py-3 text-left">Exit</th>
+                            <th class="w-16 px-3 py-3 text-left">Size</th>
+                            <th class="w-20 px-3 py-3 text-left">P/L</th>
+                            <th class="w-24 px-3 py-3 text-left">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for trade in trades %}
-                        <tr>
-                            <td>{{ trade.date }}</td>
-                            <td>{{ trade.symbol }}</td>
-                            <td>
+                        <tr class="border-t border-gray-700 hover:bg-gray-800">
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.date }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.symbol }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap">
                                 {% if trade.trade_type == 'long' %}
                                 <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-full text-xs">Long</span>
                                 {% else %}
                                 <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-full text-xs">Short</span>
                                 {% endif %}
                             </td>
-                            <td>{{ trade.strategy }}</td>
-                            <td>{{ trade.entry_price_formatted }}</td>
-                            <td>{{ trade.exit_price_formatted }}</td>
-                            <td>{{ trade.size }}</td>
-                            <td class="{% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.broker }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap truncate max-w-xs">{{ trade.strategy }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.entry_price_formatted }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.exit_price_formatted }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.size }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap {% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
                                 {{ trade.pnl_formatted }}
                             </td>
-                            <td>
-                                <div class="flex space-x-2">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="flex space-x-3">
                                     <a href="/trade/{{ trade.id }}" class="text-indigo-400 hover:text-indigo-300" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>

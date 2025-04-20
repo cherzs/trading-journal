@@ -101,10 +101,24 @@
             <div class="card p-4 flex flex-col items-center justify-center">
                 <span class="text-sm text-gray-400">% Return</span>
                 <span class="text-2xl font-bold {% if trade.pnl > 0 %}text-green-500{% else %}text-red-500{% endif %}">
-                    {% if trade.trade_type == 'long' %}
-                        {{ (((trade.exit_price - trade.entry_price) / trade.entry_price) * 100)|round(2) }}%
+                    {% if trade.trade_type == 'long' and trade.entry_price is defined and trade.exit_price is defined %}
+                        {% set entry = trade.entry_price|float(0) %}
+                        {% set exit = trade.exit_price|float(0) %}
+                        {% if entry > 0 %}
+                            {{ (((exit - entry) / entry) * 100)|round(2) }}%
+                        {% else %}
+                            0.00%
+                        {% endif %}
+                    {% elif trade.trade_type == 'short' and trade.entry_price is defined and trade.exit_price is defined %}
+                        {% set entry = trade.entry_price|float(0) %}
+                        {% set exit = trade.exit_price|float(0) %}
+                        {% if entry > 0 %}
+                            {{ (((entry - exit) / entry) * 100)|round(2) }}%
+                        {% else %}
+                            0.00%
+                        {% endif %}
                     {% else %}
-                        {{ (((trade.entry_price - trade.exit_price) / trade.entry_price) * 100)|round(2) }}%
+                        0.00%
                     {% endif %}
                 </span>
             </div>
@@ -150,6 +164,12 @@
                                 <h3 class="text-sm font-medium text-gray-400">Position Size</h3>
                                 <p class="mt-1 text-base font-medium">{{ trade.size }}</p>
                             </div>
+                            {% if trade.broker %}
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-400">Broker</h3>
+                                <p class="mt-1 text-base font-medium">{{ trade.broker }}</p>
+                            </div>
+                            {% endif %}
                             <div>
                                 <h3 class="text-sm font-medium text-gray-400">Entry Price</h3>
                                 <p class="mt-1 text-base font-medium">{{ trade.entry_price_formatted }}</p>
@@ -240,12 +260,21 @@
                         <div class="mb-4">
                             <h4 class="text-sm font-medium text-gray-400 mb-2">Profitability vs Target</h4>
                             <div class="w-full bg-gray-700 rounded-full h-2.5">
-                                {% if trade.take_profit and trade.pnl > 0 and trade.trade_type == 'long' %}
-                                    {% set percent = ((trade.exit_price - trade.entry_price) / (trade.take_profit - trade.entry_price) * 100)|round %}
-                                {% elif trade.take_profit and trade.pnl > 0 and trade.trade_type == 'short' %}
-                                    {% set percent = ((trade.entry_price - trade.exit_price) / (trade.entry_price - trade.take_profit) * 100)|round %}
-                                {% else %}
-                                    {% set percent = 0 %}
+                                {% set percent = 0 %}
+                                {% if trade.take_profit is defined and trade.take_profit and trade.pnl is defined and trade.pnl|float > 0 and trade.trade_type is defined and trade.trade_type == 'long' and trade.entry_price is defined and trade.exit_price is defined %}
+                                    {% set entry = trade.entry_price|float %}
+                                    {% set exit = trade.exit_price|float %}
+                                    {% set tp = trade.take_profit|float %}
+                                    {% if tp > entry %}
+                                        {% set percent = ((exit - entry) / (tp - entry) * 100)|round %}
+                                    {% endif %}
+                                {% elif trade.take_profit is defined and trade.take_profit and trade.pnl is defined and trade.pnl|float > 0 and trade.trade_type is defined and trade.trade_type == 'short' and trade.entry_price is defined and trade.exit_price is defined %}
+                                    {% set entry = trade.entry_price|float %}
+                                    {% set exit = trade.exit_price|float %}
+                                    {% set tp = trade.take_profit|float %}
+                                    {% if entry > tp %}
+                                        {% set percent = ((entry - exit) / (entry - tp) * 100)|round %}
+                                    {% endif %}
                                 {% endif %}
                                 {% set display_percent = percent if percent <= 100 else 100 %}
                                 <div class="bg-purple-600 h-2.5 rounded-full" style="width: {{ display_percent }}%"></div>
@@ -268,7 +297,7 @@
                         <h3 class="text-xl font-bold">Actions</h3>
                     </div>
                     <div class="p-4 space-y-3">
-                        <a href="#" class="btn-primary w-full flex items-center justify-center">
+                        <a href="{{ url_for('edit_trade', trade_id=trade.id) }}" class="btn-primary w-full flex items-center justify-center">
                             <i class="fas fa-edit mr-2"></i> Edit Trade
                         </a>
                         <button id="duplicate-btn" class="btn-secondary w-full flex items-center justify-center">

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file, Response
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
@@ -31,6 +31,7 @@ import random
 import string
 from io import StringIO, BytesIO
 import traceback
+from urllib.parse import urlparse
 
 # Load environment variables
 load_dotenv()
@@ -51,6 +52,12 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['DATA_FOLDER'] = 'data'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.permanent_session_lifetime = timedelta(days=7)
+
+# Add min function to Jinja globals
+app.jinja_env.globals.update(min=min, max=max)
+
+# Configure Jinja2 extensions
+app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 # Google OAuth Configuration
 app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID', '')
@@ -261,6 +268,7 @@ class TradeForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     symbol = StringField('Symbol', validators=[DataRequired()])
     trade_type = SelectField('Type', choices=[('long', 'Long'), ('short', 'Short')], validators=[DataRequired()])
+    broker = StringField('Broker', validators=[Optional()])
     entry_price = FloatField('Entry Price', validators=[DataRequired()])
     exit_price = FloatField('Exit Price', validators=[DataRequired()])
     size = FloatField('Position Size', validators=[DataRequired()])
@@ -308,6 +316,31 @@ def get_user_trades(user_id):
         print(f"Error reading trades: {e}")
         # Fallback to in-memory trades
         return pd.DataFrame(trades_db.get(user_id, []))
+
+def load_demo_trades(user_id="demo"):
+    """Load demo trades from CSV for the demo user"""
+    try:
+        # Check if trades.csv exists
+        if not os.path.exists(f"{app.config['DATA_FOLDER']}/trades.csv"):
+            print("Demo trades file not found")
+            return []
+        
+        # Read the CSV file
+        trades_df = pd.read_csv(f"{app.config['DATA_FOLDER']}/trades.csv")
+        
+        # Filter for demo trades
+        demo_trades = trades_df[trades_df['user_id'] == user_id].to_dict(orient='records')
+        
+        # If no demo trades found, return empty list
+        if not demo_trades:
+            print("No demo trades found in CSV")
+            return []
+            
+        print(f"Loaded {len(demo_trades)} demo trades")
+        return demo_trades
+    except Exception as e:
+        print(f"Error loading demo trades: {e}")
+        return []
 
 def calculate_rr_ratio(entry, sl, tp):
     if not entry or not sl or not tp:
@@ -407,7 +440,7 @@ def login():
                 
                 # Check if the user came from a specific page
                 next_page = request.args.get('next')
-                if not next_page or url_parse(next_page).netloc != '':
+                if not next_page or urlparse(next_page).netloc != '':
                     next_page = url_for('dashboard')
                     
                 return redirect(next_page)
@@ -430,10 +463,18 @@ def login():
                 
         if demo_user:
             login_user(demo_user)
+            
+            # Ensure demo user has demo trades loaded
+            if demo_user.id in trades_db and not trades_db[demo_user.id]:
+                # Reload demo trades in case they were deleted
+                demo_trades = load_demo_trades("demo")
+                trades_db[demo_user.id] = demo_trades
+                print(f"Reloaded {len(demo_trades)} demo trades for existing demo user")
+                
             return redirect(url_for('dashboard'))
         else:
             # Create demo user if it doesn't exist
-            user_id = str(uuid.uuid4())
+            user_id = "demo"  # Use 'demo' as the user_id for consistent identification
             password_hash = generate_password_hash("demo")
             
             new_user = User(
@@ -445,9 +486,11 @@ def login():
             )
             
             users[user_id] = new_user
-            trades_db[user_id] = []
             
-            # Optional: Add sample trades for the demo user
+            # Load demo trades for the demo user
+            demo_trades = load_demo_trades(user_id)
+            trades_db[user_id] = demo_trades
+            print(f"Loaded {len(demo_trades)} demo trades for new demo user")
             
             # Log in demo user
             login_user(new_user)
@@ -614,6 +657,10 @@ def google_callback():
             # Initialize trades list for the new user
             trades_db[user_id] = []
             
+            # Load demo trades for the new user
+            demo_trades = load_demo_trades(user_id)
+            trades_db[user_id].extend(demo_trades)
+            
             # Save users data
             save_users()
             print(f"Created and saved new user: {users_name} (ID: {user_id})")
@@ -772,16 +819,49 @@ def dashboard():
     
     # Calculate statistics
     total_trades = len(trades)
-    winning_trades = sum(1 for trade in trades if trade.get('pnl', 0) > 0)
+    
+    # Calculate winning trades with safer type handling
+    winning_trades = 0
+    for trade in trades:
+        if 'pnl' in trade:
+            try:
+                pnl = float(trade['pnl'])
+                if pnl > 0:
+                    winning_trades += 1
+            except (ValueError, TypeError):
+                # Skip this trade for statistics if pnl can't be converted
+                pass
+                
     win_rate = round((winning_trades / total_trades * 100) if total_trades > 0 else 0, 2)
     
-    # Calculate profit factor
-    gross_profit = sum(trade.get('pnl', 0) for trade in trades if trade.get('pnl', 0) > 0)
-    gross_loss = abs(sum(trade.get('pnl', 0) for trade in trades if trade.get('pnl', 0) < 0))
+    # Calculate profit factor with safer type handling
+    gross_profit = 0
+    gross_loss = 0
+    for trade in trades:
+        if 'pnl' in trade:
+            try:
+                pnl = float(trade['pnl'])
+                if pnl > 0:
+                    gross_profit += pnl
+                else:
+                    gross_loss += abs(pnl)
+            except (ValueError, TypeError):
+                # Skip this trade for statistics if pnl can't be converted
+                pass
+                
     profit_factor = round((gross_profit / gross_loss) if gross_loss > 0 else gross_profit, 2)
     
-    # Calculate total P&L
-    total_pnl = sum(trade.get('pnl', 0) for trade in trades)
+    # Calculate total P&L with safer type handling
+    total_pnl = 0
+    for trade in trades:
+        if 'pnl' in trade:
+            try:
+                pnl = float(trade['pnl'])
+                total_pnl += pnl
+            except (ValueError, TypeError):
+                # Skip this trade for statistics if pnl can't be converted
+                pass
+                
     total_pnl_formatted = f"${total_pnl:.2f}"
     
     # Format trades for display
@@ -794,9 +874,14 @@ def dashboard():
             except:
                 pass
         
-        # Format P&L
+        # Format P&L with safer type handling
         if 'pnl' in trade:
-            trade['pnl_formatted'] = f"${trade['pnl']:.2f}"
+            try:
+                pnl = float(trade['pnl'])
+                trade['pnl_formatted'] = f"${pnl:.2f}"
+            except (ValueError, TypeError):
+                # If it's a string that can't be converted to float, use as is
+                trade['pnl_formatted'] = f"${trade['pnl']}"
     
     # Sort trades by date (newest first) for recent trades
     sorted_trades = sorted(trades, key=lambda x: pd.to_datetime(x.get('date', '1970-01-01'), errors='coerce'), reverse=True)
@@ -816,7 +901,8 @@ def dashboard():
     for trade in trades:
         try:
             date = pd.to_datetime(trade.get('date')).strftime('%Y-%m-%d')
-            daily_pnl[date] = daily_pnl.get(date, 0) + trade.get('pnl', 0)
+            pnl = float(trade.get('pnl', 0))
+            daily_pnl[date] = daily_pnl.get(date, 0) + pnl
         except:
             continue
     
@@ -830,7 +916,7 @@ def dashboard():
         'values': values
     }
     
-    # Strategy performance data
+    # Strategy performance data with safer type handling
     strategy_performance = {}
     for trade in trades:
         strategy = trade.get('strategy', 'Unknown')
@@ -838,9 +924,15 @@ def dashboard():
             strategy_performance[strategy] = {'count': 0, 'pnl': 0, 'wins': 0}
         
         strategy_performance[strategy]['count'] += 1
-        strategy_performance[strategy]['pnl'] += trade.get('pnl', 0)
-        if trade.get('pnl', 0) > 0:
-            strategy_performance[strategy]['wins'] += 1
+        
+        try:
+            pnl = float(trade.get('pnl', 0))
+            strategy_performance[strategy]['pnl'] += pnl
+            if pnl > 0:
+                strategy_performance[strategy]['wins'] += 1
+        except (ValueError, TypeError):
+            # Skip pnl calculations for this trade if conversion fails
+            pass
     
     # Calculate win rates and format for chart
     strategy_data = {
@@ -922,6 +1014,7 @@ def add_trade():
             'date': form.date.data.strftime('%Y-%m-%d'),
             'symbol': form.symbol.data.upper(),
             'trade_type': form.trade_type.data,
+            'broker': form.broker.data,
             'entry_price': form.entry_price.data,
             'exit_price': form.exit_price.data,
             'size': form.size.data,
@@ -992,19 +1085,42 @@ def trades():
     # Convert DataFrame to list of dicts for easier template processing
     trades = []
     if not trades_df.empty:
+        # Print debug info about dataframe
+        print(f"Read {len(trades_df)} trades from dataframe")
+        print(f"DataFrame columns: {trades_df.columns.tolist()}")
+        print(f"First row sample: {trades_df.iloc[0].to_dict() if len(trades_df) > 0 else 'No rows'}")
+        
         trades = trades_df.to_dict(orient='records')
     
     # Format trades for display
     for trade in trades:
         # Format prices
         if 'entry_price' in trade:
-            trade['entry_price_formatted'] = f"${trade['entry_price']:.2f}"
+            try:
+                # Try to convert to float before formatting
+                entry_price = float(trade['entry_price'])
+                trade['entry_price_formatted'] = f"${entry_price:.2f}"
+            except (ValueError, TypeError):
+                # If it's a string that can't be converted to float, use as is
+                trade['entry_price_formatted'] = f"${trade['entry_price']}"
+                
         if 'exit_price' in trade:
-            trade['exit_price_formatted'] = f"${trade['exit_price']:.2f}"
+            try:
+                # Try to convert to float before formatting
+                exit_price = float(trade['exit_price'])
+                trade['exit_price_formatted'] = f"${exit_price:.2f}"
+            except (ValueError, TypeError):
+                # If it's a string that can't be converted to float, use as is
+                trade['exit_price_formatted'] = f"${trade['exit_price']}"
+                
         # Format P&L
         if 'pnl' in trade:
-            pnl = trade['pnl']
-            trade['pnl_formatted'] = f"${pnl:.2f}" if pnl >= 0 else f"-${abs(pnl):.2f}"
+            try:
+                pnl = float(trade['pnl'])
+                trade['pnl_formatted'] = f"${pnl:.2f}" if pnl >= 0 else f"-${abs(pnl):.2f}"
+            except (ValueError, TypeError):
+                # If it's a string that can't be converted to float, use as is
+                trade['pnl_formatted'] = f"${trade['pnl']}"
     
     # Get unique symbols and strategies for filters
     symbols = set(trade.get('symbol', '') for trade in trades if 'symbol' in trade)
@@ -1032,6 +1148,7 @@ def trades():
                           page_end=end_idx,
                           has_prev=page > 1,
                           has_next=page < total_pages,
+                          per_page=per_page,
                           google_client_id=app.config['GOOGLE_CLIENT_ID'])
 
 @app.route('/trade/<trade_id>')
@@ -1046,7 +1163,7 @@ def view_trade(trade_id):
         trades = trades_df.to_dict(orient='records')
     
     # Find the specific trade
-    trade = next((t for t in trades if t.get('id') == trade_id), None)
+    trade = next((t for t in trades if str(t.get('id')) == str(trade_id)), None)
     
     if not trade:
         flash('Trade not found')
@@ -1054,51 +1171,255 @@ def view_trade(trade_id):
     
     # Format prices and P&L for display
     if 'entry_price' in trade:
-        trade['entry_price_formatted'] = f"${trade['entry_price']:.2f}"
+        try:
+            # Try to convert to float before formatting
+            entry_price = float(trade['entry_price'])
+            trade['entry_price_formatted'] = f"${entry_price:.2f}"
+        except (ValueError, TypeError):
+            # If it's a string that can't be converted to float, use as is
+            trade['entry_price_formatted'] = f"${trade['entry_price']}"
+    
     if 'exit_price' in trade:
-        trade['exit_price_formatted'] = f"${trade['exit_price']:.2f}"
+        try:
+            # Try to convert to float before formatting
+            exit_price = float(trade['exit_price'])
+            trade['exit_price_formatted'] = f"${exit_price:.2f}"
+        except (ValueError, TypeError):
+            # If it's a string that can't be converted to float, use as is
+            trade['exit_price_formatted'] = f"${trade['exit_price']}"
+    
     if 'pnl' in trade:
-        pnl = trade['pnl']
-        trade['pnl_formatted'] = f"${pnl:.2f}" if pnl >= 0 else f"-${abs(pnl):.2f}"
+        try:
+            pnl = float(trade['pnl'])
+            trade['pnl_formatted'] = f"${pnl:.2f}" if pnl >= 0 else f"-${abs(pnl):.2f}"
+        except (ValueError, TypeError):
+            # If it's a string that can't be converted to float, use as is
+            trade['pnl_formatted'] = f"${trade['pnl']}"
+    
+    # Ensure risk_reward is calculated if possible
+    if 'entry_price' in trade and 'stop_loss' in trade and trade.get('stop_loss') is not None and 'take_profit' in trade and trade.get('take_profit') is not None:
+        try:
+            entry = float(trade['entry_price'])
+            sl = float(trade['stop_loss'])
+            tp = float(trade['take_profit'])
+            trade['risk_reward'] = calculate_rr_ratio(entry, sl, tp)
+        except (ValueError, TypeError):
+            trade['risk_reward'] = None
     
     return render_template('trade_detail.html', trade=trade, google_client_id=app.config['GOOGLE_CLIENT_ID'])
+
+@app.route('/edit_trade/<trade_id>', methods=['GET', 'POST'])
+@login_required
+def edit_trade(trade_id):
+    # Get user trades
+    trades_df = get_user_trades(current_user.id)
+    
+    # Convert DataFrame to list of dicts
+    trades = []
+    if not trades_df.empty:
+        trades = trades_df.to_dict(orient='records')
+    
+    # Find the specific trade
+    trade_index = None
+    trade_data = None
+    for i, trade in enumerate(trades):
+        if str(trade.get('id')) == str(trade_id):
+            trade_index = i
+            trade_data = trade
+            break
+    
+    if trade_data is None:
+        flash('Trade not found')
+        return redirect(url_for('trades'))
+    
+    # Create form and populate with existing data
+    form = TradeForm()
+    
+    if request.method == 'GET':
+        # Populate form with existing data
+        if 'date' in trade_data and trade_data['date']:
+            try:
+                form.date.data = datetime.strptime(trade_data['date'], '%Y-%m-%d')
+            except ValueError:
+                form.date.data = datetime.now()
+        
+        form.symbol.data = trade_data.get('symbol', '')
+        form.trade_type.data = trade_data.get('trade_type', 'long')
+        form.broker.data = trade_data.get('broker', '')
+        form.entry_price.data = float(trade_data.get('entry_price', 0))
+        form.exit_price.data = float(trade_data.get('exit_price', 0))
+        form.size.data = float(trade_data.get('size', 0))
+        
+        if 'stop_loss' in trade_data and trade_data['stop_loss'] is not None:
+            form.stop_loss.data = float(trade_data['stop_loss'])
+            
+        if 'take_profit' in trade_data and trade_data['take_profit'] is not None:
+            form.take_profit.data = float(trade_data['take_profit'])
+            
+        form.strategy.data = trade_data.get('strategy', '')
+        form.notes.data = trade_data.get('notes', '')
+    
+    if form.validate_on_submit():
+        # Update trade data
+        updated_trade = {
+            'id': trade_id,  # Preserve original ID
+            'date': form.date.data.strftime('%Y-%m-%d'),
+            'symbol': form.symbol.data.upper(),
+            'trade_type': form.trade_type.data,
+            'broker': form.broker.data,
+            'entry_price': form.entry_price.data,
+            'exit_price': form.exit_price.data,
+            'size': form.size.data,
+            'stop_loss': form.stop_loss.data,
+            'take_profit': form.take_profit.data,
+            'strategy': form.strategy.data,
+            'notes': form.notes.data,
+            'user_id': current_user.id
+        }
+        
+        # Preserve original screenshot if it exists
+        if 'screenshot' in trade_data and trade_data['screenshot']:
+            updated_trade['screenshot'] = trade_data['screenshot']
+        else:
+            updated_trade['screenshot'] = None
+            
+        # Handle new screenshot upload if provided
+        if form.screenshot.data:
+            # Delete old screenshot if it exists
+            if 'screenshot' in trade_data and trade_data['screenshot']:
+                try:
+                    old_screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade_data['screenshot'])
+                    if os.path.exists(old_screenshot_path):
+                        os.remove(old_screenshot_path)
+                except Exception as e:
+                    print(f"Error deleting old screenshot: {e}")
+            
+            # Save new screenshot
+            filename = secure_filename(f"{current_user.id}_{trade_id}_{form.screenshot.data.filename}")
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            form.screenshot.data.save(file_path)
+            updated_trade['screenshot'] = filename
+        
+        # Calculate P&L
+        updated_trade['pnl'] = calculate_pnl(
+            updated_trade['entry_price'], 
+            updated_trade['exit_price'], 
+            updated_trade['size'], 
+            updated_trade['trade_type']
+        )
+        
+        # Calculate risk/reward ratio if stop loss is provided
+        if form.stop_loss.data:
+            updated_trade['risk_reward'] = calculate_risk_reward(
+                updated_trade['entry_price'],
+                updated_trade['exit_price'],
+                updated_trade['stop_loss']
+            )
+        
+        # Update trade in memory database
+        if current_user.id in trades_db:
+            for i, trade in enumerate(trades_db[current_user.id]):
+                if trade['id'] == trade_id:
+                    trades_db[current_user.id][i] = updated_trade
+                    break
+        
+        # Update CSV file
+        try:
+            csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
+            if os.path.exists(csv_path):
+                trades_df = pd.read_csv(csv_path)
+                
+                # Find the trade to update
+                mask = trades_df['id'] == trade_id
+                if mask.any():
+                    # Update all fields from updated_trade
+                    for key, value in updated_trade.items():
+                        trades_df.loc[mask, key] = value
+                    
+                    # Save updated dataframe
+                    trades_df.to_csv(csv_path, index=False)
+        except Exception as e:
+            print(f"Error updating trade in CSV: {e}")
+            # Continue as we still have it saved in memory
+        
+        flash('Trade updated successfully!')
+        return redirect(url_for('trades'))
+    
+    return render_template('edit_trade.html', form=form, trade_id=trade_id, google_client_id=app.config['GOOGLE_CLIENT_ID'])
 
 @app.route('/delete_trade/<trade_id>', methods=['POST'])
 @login_required
 def delete_trade(trade_id):
+    # Add debug logging
+    print(f"Attempting to delete trade with ID: {trade_id}")
+    print(f"Current user ID: {current_user.id}")
+    
     # Check in-memory trades
     if current_user.id in trades_db:
         in_memory_trades = trades_db[current_user.id]
+        print(f"Found {len(in_memory_trades)} trades for current user")
+        
+        # Print trade IDs for debugging
+        for i, trade in enumerate(in_memory_trades):
+            print(f"Trade {i}: ID={trade.get('id')}, Type={type(trade.get('id'))}")
+            print(f"Trade {i} data: {trade}")
         
         for i, trade in enumerate(in_memory_trades):
-            if trade['id'] == trade_id:
+            # Ensure both IDs are strings for comparison
+            stored_id = str(trade.get('id', ''))
+            delete_id = str(trade_id)
+            print(f"Comparing stored ID: {stored_id} ({type(stored_id)}) with delete ID: {delete_id} ({type(delete_id)})")
+            
+            if stored_id == delete_id:
+                print(f"Match found for trade at index {i}")
                 # Delete any associated screenshot
                 if trade.get('screenshot'):
                     try:
                         screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade['screenshot'])
                         if os.path.exists(screenshot_path):
                             os.remove(screenshot_path)
+                            print(f"Deleted screenshot: {screenshot_path}")
+                        else:
+                            print(f"Screenshot not found at: {screenshot_path}")
                     except Exception as e:
                         print(f"Error deleting screenshot: {e}")
                 
                 # Remove the trade
                 removed_trade = in_memory_trades.pop(i)
+                print(f"Removed trade: {removed_trade}")
                 
                 # Update CSV file if it exists
                 csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
                 if os.path.exists(csv_path):
                     try:
                         trades_df = pd.read_csv(csv_path)
+                        print(f"CSV file found, shape before: {trades_df.shape}")
                         # Check if ID column exists
                         if 'id' in trades_df.columns:
-                            # Remove the trade with matching ID
-                            trades_df = trades_df[trades_df['id'] != trade_id]
+                            # Convert both IDs to strings to ensure proper comparison
+                            trades_df['id'] = trades_df['id'].astype(str)
+                            
+                            # Print all IDs in the CSV for debugging
+                            print(f"All IDs in CSV: {trades_df['id'].tolist()}")
+                            
+                            # Remove the trade with matching ID (use exact string comparison)
+                            trades_df = trades_df[trades_df['id'] != str(trade_id)]
+                            print(f"CSV file shape after: {trades_df.shape}")
                             trades_df.to_csv(csv_path, index=False)
+                            print(f"CSV file updated at: {csv_path}")
+                        else:
+                            print("No 'id' column found in CSV")
                     except Exception as e:
                         print(f"Error updating CSV after delete: {e}")
+                else:
+                    print(f"CSV file not found at: {csv_path}")
                 
                 flash('Trade deleted successfully')
                 break
+        else:
+            print(f"No trade found with ID: {trade_id}")
+    else:
+        print(f"No trades found for user ID: {current_user.id}")
     
     return redirect(url_for('trades'))
 
@@ -1212,8 +1533,7 @@ def import_trades():
             trades_df = pd.read_csv(file)
             
             # Validate required columns
-            required_columns = ['symbol', 'entry_date', 'exit_date', 'entry_price', 
-                                'exit_price', 'position_size', 'pnl', 'strategy', 'notes']
+            required_columns = ['symbol', 'entry_price', 'exit_price', 'size', 'strategy']
             
             missing_columns = [col for col in required_columns if col not in trades_df.columns]
             if missing_columns:
@@ -1225,9 +1545,9 @@ def import_trades():
                 trades_df['user_id'] = user_id
             
             # Add trade_id if not present
-            if 'trade_id' not in trades_df.columns:
+            if 'id' not in trades_df.columns:
                 # Generate unique trade IDs
-                trades_df['trade_id'] = [str(uuid.uuid4()) for _ in range(len(trades_df))]
+                trades_df['id'] = [str(uuid.uuid4()) for _ in range(len(trades_df))]
             
             # Convert to list of dicts
             trades_list = trades_df.to_dict('records')
@@ -1293,12 +1613,14 @@ def save_trades_to_csv():
     
     if all_trades:
         trades_df = pd.DataFrame(all_trades)
-        trades_df.to_csv('trades.csv', index=False)
+        # Ensure the file is saved to the data folder
+        os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
+        trades_df.to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
     else:
-        # Create empty CSV with headers
-        pd.DataFrame(columns=['trade_id', 'symbol', 'entry_date', 'exit_date', 
-                             'entry_price', 'exit_price', 'position_size', 
-                             'pnl', 'strategy', 'notes', 'user_id']).to_csv('trades.csv', index=False)
+        # Create empty CSV with headers that include broker
+        pd.DataFrame(columns=['id', 'user_id', 'date', 'symbol', 'trade_type', 'broker',
+                             'entry_price', 'exit_price', 'size', 'stop_loss', 'take_profit',
+                             'pnl', 'strategy', 'notes', 'screenshot']).to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
 
 # New route for Google Sign-In token handling
 @app.route('/login/google/token', methods=['POST'])
@@ -1370,7 +1692,7 @@ def login_google_token():
                 email=email,
                 password_hash=hashed_password,
                 is_verified=True,  # User is verified via Google
-                google_id=google_id  # Store the Google ID
+                google_id=google_id
             )
             users[user_id] = new_user
             # Initialize empty trades list for the new user
@@ -1536,6 +1858,55 @@ def register_google_token():
         import traceback
         print(traceback.format_exc())
         return jsonify({'error': f'Registration failed: {str(e)}'}), 500
+
+@app.route('/debug/trades')
+@login_required
+def debug_trades():
+    # Only allow this in development mode
+    if not app.debug:
+        flash('Debug mode is disabled')
+        return redirect(url_for('dashboard'))
+    
+    output = []
+    output.append(f"Current user ID: {current_user.id}")
+    
+    # Check in-memory trades
+    if current_user.id in trades_db:
+        in_memory_trades = trades_db[current_user.id]
+        output.append(f"Found {len(in_memory_trades)} trades for current user in memory")
+        
+        for i, trade in enumerate(in_memory_trades):
+            output.append(f"Memory Trade {i}:")
+            output.append(f"  ID: {trade.get('id')} (Type: {type(trade.get('id'))})")
+            output.append(f"  Symbol: {trade.get('symbol')}")
+            output.append(f"  Date: {trade.get('date')}")
+    else:
+        output.append("No trades found in memory for current user")
+    
+    # Check CSV file
+    csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
+    if os.path.exists(csv_path):
+        try:
+            trades_df = pd.read_csv(csv_path)
+            output.append(f"CSV file found at {csv_path}")
+            output.append(f"CSV file shape: {trades_df.shape}")
+            
+            # Filter for current user
+            user_trades = trades_df[trades_df['user_id'] == current_user.id]
+            output.append(f"Found {len(user_trades)} trades for current user in CSV")
+            
+            for i, (_, trade) in enumerate(user_trades.iterrows()):
+                output.append(f"CSV Trade {i}:")
+                output.append(f"  ID: {trade.get('id')} (Type: {type(trade.get('id'))})")
+                output.append(f"  Symbol: {trade.get('symbol')}")
+                output.append(f"  Date: {trade.get('date')}")
+        except Exception as e:
+            output.append(f"Error reading CSV: {e}")
+    else:
+        output.append(f"CSV file not found at {csv_path}")
+    
+    # Return as plaintext for easy debugging
+    return '<pre>' + '\n'.join(output) + '</pre>'
 
 # Run the app
 if __name__ == '__main__':

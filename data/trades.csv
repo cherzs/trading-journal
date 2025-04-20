@@ -1,102 +1,21 @@
-date,pair,entry_price,exit_price,position_size,stop_loss,take_profit,result_percent,trade_result,strategy,timeframe,notes,screenshot,id,symbol,trade_type,size,user_id,pnl,risk_reward
-2023-06-01,BTC/USDT,30000.5,30450.25,0.1,29800.0,30500.0,1.5,Win,Price Action,15m,Strong support bounce,,,,,,,,
-2023-06-01,ETH/USDT,1850.75,1825.5,0.5,1880.0,1820.0,1.36,Win,SMC (Smart Money Concept),5m,Break of structure followed by retest,,,,,,,,
-2023-06-02,BTC/USDT,30200.0,29950.75,0.1,30500.0,29900.0,0.83,Win,Support/Resistance,30m,Resistance turned support,,,,,,,,
-2023-06-03,SOL/USDT,21.75,21.25,5.0,22.0,21.0,2.3,Win,Breakout,15m,Failed breakout - reversal trade,,,,,,,,
-2023-06-03,BTC/USDT,30050.0,29800.0,0.1,30100.0,29700.0,-0.83,Loss,Price Action,5m,Failed support - stopped out,,,,,,,,
-2023-06-04,ETH/USDT,1840.5,1820.25,0.5,1860.0,1820.0,1.1,Win,EMA Cross,5m,EMA 9/21 bearish cross,,,,,,,,
-2023-06-04,BNB/USDT,240.0,238.5,0.5,241.0,237.0,-0.63,Loss,Support/Resistance,15m,Support broke down immediately,,,,,,,,
-2023-06-05,BTC/USDT,29800.0,29650.5,0.1,29900.0,29600.0,0.5,Win,Price Action,1h,Bearish engulfing on resistance,,,,,,,,
-2023-06-05,XRP/USDT,0.485,0.4725,100.0,0.49,0.47,2.58,Win,Fibonacci,30m,Fib retracement to 0.618,,,,,,,,
-2023-06-06,BTC/USDT,29500.0,29800.0,0.1,29300.0,29900.0,1.02,Win,Support/Resistance,15m,Double bottom formation,,,,,,,,
-2023-06-06,ETH/USDT,1805.0,1790.0,0.5,1815.0,1780.0,-0.83,Loss,Breakout,5m,False breakout pattern,,,,,,,,
-2023-06-07,ETH/USDT,1825.0,1795.5,0.5,1840.0,1790.0,1.62,Win,SMC (Smart Money Concept),5m,Order block tap,,,,,,,,
-2023-06-08,SOL/USDT,20.5,19.75,5.0,20.8,19.5,3.66,Win,Breakout,15m,Break of key level,,,,,,,,
-2023-06-08,ADA/USDT,0.32,0.315,100.0,0.3225,0.3125,-1.56,Loss,Fibonacci,30m,Failed at fib level,,,,,,,,
-2023-06-09,BTC/USDT,29600.0,29400.0,0.1,29700.0,29350.0,0.68,Win,EMA Cross,1h,Death cross on 4h,,,,,,,,
-2023-06-09,SOL/USDT,20.0,19.8,5.0,20.1,19.75,-1.0,Loss,SMC (Smart Money Concept),5m,Trapped in liquidity zone,,,,,,,,
-2023-06-10,ETH/USDT,1780.0,1810.5,0.5,1765.0,1815.0,1.71,Win,Price Action,30m,Morning star pattern,,,,,,,,
-2023-06-10,DOT/USDT,5.25,5.1,10.0,5.35,5.05,2.86,Win,Fibonacci,15m,Perfect fib extension target,,,,,,,,
-2023-06-11,BTC/USDT,29400.0,29250.0,0.15,29500.0,29200.0,0.51,Win,Support/Resistance,5m,Break of trendline,,,,,,,,
-2023-06-11,ETH/USDT,1790.0,1780.0,0.5,1800.0,1770.0,-0.56,Loss,EMA Cross,15m,Failed EMA bounce,,,,,,,,
-2023-06-12,ETH/USDT,1800.0,1775.0,0.5,1815.0,1770.0,1.39,Win,SMC (Smart Money Concept),15m,Liquidity sweep and reversal,,,,,,,,
-2023-06-12,BTC/USDT,29200.0,29100.0,0.1,29250.0,29000.0,-0.34,Loss,Breakout,5m,False breakout on low volume,,,,,,,,
-2023-06-13,SOL/USDT,20.0,19.5,5.0,20.25,19.25,2.5,Win,Price Action,30m,Three black crows,,,,,,,,
-2023-06-14,BTC/USDT,29300.0,29500.0,0.1,29200.0,29600.0,0.68,Win,EMA Cross,1h,Bullish cross on low timeframe,,,,,,,,
-2023-06-14,XRP/USDT,0.465,0.46,100.0,0.4675,0.4575,-1.08,Loss,Support/Resistance,15m,Support level failed,,,,,,,,
-2023-06-15,ETH/USDT,1750.0,1720.0,0.5,1765.0,1715.0,1.71,Win,Breakout,15m,Channel breakout,,,,,,,,
-2023-06-16,BTC/USDT,29450.0,29250.0,0.1,29550.0,29150.0,0.68,Win,Support/Resistance,5m,Break of major support,,,,,,,,
-2023-06-16,DOT/USDT,5.2,5.15,10.0,5.25,5.1,-0.96,Loss,Price Action,30m,Reversal candle failed to follow through,,,,,,,,
-2023-06-17,ADA/USDT,0.315,0.3075,100.0,0.318,0.305,2.38,Win,Fibonacci,15m,0.786 fib rejection,,,,,,,,
-2023-06-18,BTC/USDT,29200.0,29400.0,0.1,29100.0,29500.0,0.68,Win,Price Action,30m,Bullish divergence on RSI,,,,,,,,
-2023-06-18,ETH/USDT,1715.0,1700.0,0.5,1725.0,1690.0,-0.87,Loss,Breakout,5m,Breakout faded quickly,,,,,,,,
-2023-06-19,ETH/USDT,1730.0,1705.0,0.5,1745.0,1700.0,1.45,Win,SMC (Smart Money Concept),15m,Breaker block retest,,,,,,,,
-2023-06-20,BTC/USDT,29350.0,29100.0,0.1,29450.0,29050.0,0.85,Win,EMA Cross,1h,EMA 50/100 bear cross,,,,,,,,
-2023-06-20,SOL/USDT,19.0,18.8,5.0,19.1,18.7,-1.05,Loss,Fibonacci,30m,Missed fib target by 3 ticks,,,,,,,,
-2023-06-21,SOL/USDT,19.25,19.75,5.0,19.0,20.0,2.6,Win,Support/Resistance,30m,Range support bounce,,,,,,,,
-2023-06-22,ETH/USDT,1700.0,1675.0,0.5,1715.0,1670.0,1.47,Win,Breakout,5m,Bull flag continuation,,,,,,,,
-2023-06-22,BTC/USDT,29200.0,29150.0,0.1,29250.0,29100.0,-0.17,Loss,Price Action,15m,Failed to break support,,,,,,,,
-2023-06-23,BTC/USDT,29100.0,28900.0,0.1,29200.0,28850.0,0.69,Win,Price Action,15m,Evening star pattern,,,,,,,,
-2023-06-24,XRP/USDT,0.465,0.4725,100.0,0.46,0.475,1.61,Win,Fibonacci,30m,Golden pocket bounce,,,,,,,,
-2023-06-24,ETH/USDT,1690.0,1675.0,0.5,1700.0,1665.0,-0.89,Loss,EMA Cross,1h,False EMA cross signal,,,,,,,,
-2023-06-25,BTC/USDT,28800.0,29000.0,0.15,28700.0,29100.0,0.69,Win,Support/Resistance,1h,Weekly level bounce,,,,,,,,
-2023-06-26,ETH/USDT,1680.0,1650.0,0.5,1695.0,1645.0,1.79,Win,SMC (Smart Money Concept),5m,Fair value gap fill,,,,,,,,
-2023-06-26,BNB/USDT,232.0,230.5,0.5,233.0,229.5,-0.65,Loss,Breakout,15m,Failed triangle breakout,,,,,,,,
-2023-06-27,BTC/USDT,29000.0,28700.0,0.1,29150.0,28650.0,1.03,Win,EMA Cross,30m,Break of 200 EMA,,,,,,,,
-2023-06-28,SOL/USDT,19.5,19.0,5.0,19.75,18.75,2.56,Win,Price Action,15m,Head and shoulders completion,,,,,,,,
-2023-06-28,ADA/USDT,0.305,0.3025,100.0,0.3075,0.3,-0.82,Loss,Support/Resistance,5m,Support became resistance,,,,,,,,
-2023-06-29,ETH/USDT,1655.0,1675.0,0.5,1645.0,1685.0,1.21,Win,Breakout,5m,Ascending triangle breakout,,,,,,,,
-2023-06-30,BTC/USDT,28750.0,28600.0,0.1,28850.0,28550.0,0.52,Win,Support/Resistance,1h,Range breakdown,,,,,,,,
-2023-06-30,XRP/USDT,0.455,0.4525,100.0,0.4575,0.45,-0.55,Loss,SMC (Smart Money Concept),30m,Failed breaker block,,,,,,,,
-2023-07-01,ETH/USDT,1670.0,1650.0,0.5,1685.0,1645.0,1.2,Win,Fibonacci,30m,Rejection at 0.382 retracement,,,,,,,,
-2023-07-02,BTC/USDT,28650.0,28850.0,0.1,28550.0,28950.0,0.7,Win,Price Action,15m,Double bottom pattern,,,,,,,,
-2023-07-02,SOL/USDT,18.5,18.35,5.0,18.6,18.25,-0.81,Loss,EMA Cross,5m,Crosses but failed to follow through,,,,,,,,
-2023-07-03,SOL/USDT,19.25,18.75,5.0,19.5,18.5,2.6,Win,SMC (Smart Money Concept),5m,Optimal trade entry hit,,,,,,,,
-2023-07-04,BTC/USDT,28800.0,28500.0,0.15,28900.0,28450.0,1.04,Win,EMA Cross,1h,Multiple EMA rejection,,,,,,,,
-2023-07-04,ETH/USDT,1635.0,1625.0,0.5,1645.0,1615.0,-0.61,Loss,Price Action,15m,Failed inside bar breakout,,,,,,,,
-2023-07-05,ETH/USDT,1645.0,1675.0,0.5,1630.0,1685.0,1.82,Win,Support/Resistance,30m,Strong support bounce with volume,,,,,,,,
-2023-07-06,BTC/USDT,28550.0,28450.0,0.1,28600.0,28400.0,0.35,Win,Breakout,15m,Pennant breakdown,,,,,,,,
-2023-07-06,DOT/USDT,5.05,5.0,10.0,5.1,4.95,-0.99,Loss,Fibonacci,30m,Missed fib target slightly,,,,,,,,
-2023-07-07,DOT/USDT,5.15,5.05,10.0,5.2,5.0,1.94,Win,Price Action,5m,Bearish engulfing at resistance,,,,,,,,
-2023-07-08,BTC/USDT,28400.0,28250.0,0.1,28450.0,28200.0,0.53,Win,Fibonacci,1h,Extension target reached,,,,,,,,
-2023-07-08,ETH/USDT,1635.0,1625.0,0.5,1645.0,1615.0,-0.61,Loss,Breakout,5m,False flag breakout,,,,,,,,
-2023-07-09,ETH/USDT,1660.0,1630.0,0.5,1675.0,1625.0,1.81,Win,SMC (Smart Money Concept),15m,Manipulation and reversal,,,,,,,,
-2023-07-10,BTC/USDT,28300.0,28500.0,0.1,28200.0,28600.0,0.71,Win,Support/Resistance,30m,Higher low formation,,,,,,,,
-2023-07-10,SOL/USDT,18.1,17.95,5.0,18.2,17.85,-0.83,Loss,EMA Cross,15m,Cross but no momentum,,,,,,,,
-2023-07-11,SOL/USDT,18.5,18.0,5.0,18.75,17.75,2.7,Win,EMA Cross,5m,Cross after consolidation,,,,,,,,
-2023-07-12,BTC/USDT,28450.0,28300.0,0.1,28500.0,28250.0,0.53,Win,Price Action,15m,Bear flag pattern completion,,,,,,,,
-2023-07-12,XRP/USDT,0.45,0.4475,100.0,0.4525,0.445,-0.56,Loss,Support/Resistance,30m,Broke through support too quickly,,,,,,,,
-2023-07-13,ETH/USDT,1625.0,1645.0,0.5,1615.0,1655.0,1.23,Win,Breakout,30m,Range breakout after consolidation,,,,,,,,
-2023-07-14,BTC/USDT,28350.0,28200.0,0.15,28400.0,28150.0,0.53,Win,Fibonacci,1h,Golden ratio rejection,,,,,,,,
-2023-07-14,ADA/USDT,0.3025,0.3,100.0,0.305,0.2975,-0.83,Loss,SMC (Smart Money Concept),5m,Order block failed,,,,,,,,
-2023-07-15,XRP/USDT,0.455,0.4625,100.0,0.45,0.465,1.65,Win,Support/Resistance,15m,Weekly level bounce with volume,,,,,,,,
-2023-07-16,BTC/USDT,28150.0,28350.0,0.1,28050.0,28450.0,0.71,Win,SMC (Smart Money Concept),5m,Swing failure pattern,,,,,,,,
-2023-07-16,BNB/USDT,228.5,227.0,0.5,229.5,226.0,-0.66,Loss,Price Action,30m,Failed hammer reversal,,,,,,,,
-2023-07-17,ETH/USDT,1640.0,1615.0,0.5,1655.0,1605.0,1.52,Win,EMA Cross,30m,Death cross continuation,,,,,,,,
-2023-07-18,SOL/USDT,18.25,17.75,5.0,18.5,17.5,2.74,Win,Price Action,15m,Shooting star at resistance,,,,,,,,
-2023-07-18,ETH/USDT,1620.0,1610.0,0.5,1630.0,1600.0,-0.62,Loss,Breakout,5m,False flag breakdown,,,,,,,,
-2023-07-19,BTC/USDT,28300.0,28100.0,0.1,28400.0,28000.0,0.71,Win,Breakout,5m,Channel breakdown,,,,,,,,
-2023-07-20,ETH/USDT,1610.0,1635.0,0.5,1595.0,1645.0,1.55,Win,Support/Resistance,1h,Support zone bounce,,,,,,,,
-2023-07-20,DOT/USDT,5.0,4.95,10.0,5.05,4.9,-1.0,Loss,Fibonacci,15m,Failed to reach fib target ,,,,,,,,
-2025-04-20,,65000.0,70000.0,,60000.0,70000.0,,,Breakout,,Nothing,,0e8f7244-8ad2-4d94-aecc-6e95d239c01d,BTC/USDT,long,1.0,abf1cd3c-fad5-47ab-8f88-128173aef727,5000.0,1.0
-2025-04-25,,9000.0,9000.0,,9000.0,9000.0,,,Breakout,,What,demo_1d2ec81f-f3c7-41ad-9364-81045a438828_Screenshot_2025-04-18_at_11.32.19.png,1d2ec81f-f3c7-41ad-9364-81045a438828,BTC/USDT,long,9000.0,demo,0.0,
-1000,1,2024-04-01,EURUSD,long,Breakout,1.0725,1.0792,1.0,1.0690,1.0830,67.00,Strong breakout above resistance with increased volume. Took profits at R:R 2:1.,eurusd_breakout.png,2024-04-01 10:32:15
-1001,1,2024-04-02,BTCUSD,long,Support Bounce,64250.50,65750.25,0.1,63500.00,67000.00,150.00,Bitcoin bounced exactly at the support zone. Multiple timeframe confirmation.,btc_support_bounce.png,2024-04-02 14:45:22
-1002,1,2024-04-03,AAPL,short,Double Top,169.75,165.30,5.0,171.50,164.00,222.50,Clear double top pattern with divergence on RSI. Textbook setup.,aapl_double_top.png,2024-04-03 09:30:10
-1003,1,2024-04-04,GBPJPY,long,Trend Continuation,189.50,190.75,0.5,188.75,192.00,62.50,Pullback to the 20EMA in an uptrend. Price action confirmed with bullish engulfing candle.,gbpjpy_trend.png,2024-04-04 16:12:33
-1004,1,2024-04-05,TSLA,short,Head and Shoulders,175.25,168.40,2.0,178.50,165.00,137.00,Clear head and shoulders pattern completed with neckline break. Volume increased on breakdown.,tsla_h_and_s.png,2024-04-05 11:20:45
-1005,1,2024-04-08,GOLD,long,Fibonacci Retracement,2320.75,2345.50,0.5,2305.00,2360.00,124.38,Gold pulled back to 0.618 Fibonacci level and held support. Added on confirmation candle.,gold_fib.png,2024-04-08 08:55:17
-1006,1,2024-04-09,USDJPY,short,Resistance Rejection,151.80,150.25,1.0,152.50,149.00,155.00,Strong rejection at major resistance level with bearish engulfing candle. Central bank intervention fears helped the move.,usdjpy_resistance.png,2024-04-09 22:30:05
-1007,1,2024-04-10,AMZN,long,Gap Up,180.25,183.50,3.0,178.50,185.00,97.50,Gap up after positive earnings. Bought on first pullback with support from VWAP.,amzn_gap.png,2024-04-10 10:15:30
-1008,1,2024-04-11,ETHUSD,short,Bearish Divergence,3125.75,3050.20,0.25,3175.00,3000.00,18.89,RSI showed clear bearish divergence on 4H chart. Took half profits at first target.,eth_divergence.png,2024-04-11 13:40:22
-1009,1,2024-04-12,SPY,long,Trendline Bounce,500.25,504.50,10.0,498.00,507.00,425.00,Market bounced precisely off the ascending trendline with strong buying volume.,spy_trendline.png,2024-04-12 15:20:18
-1010,1,2024-04-15,NVDA,long,Cup and Handle,875.50,890.25,2.0,865.00,905.00,295.00,Textbook cup and handle pattern. Waited for breakout confirmation before entry.,nvda_cup_handle.png,2024-04-15 09:45:30
-1011,1,2024-04-16,USDCAD,short,Double Top,1.3780,1.3720,1.0,1.3820,1.3680,60.00,Double top at key resistance level. Sold on breakdown with confirmation.,usdcad_double_top.png,2024-04-16 11:10:45
-1012,1,2024-04-17,META,long,Breakout Retest,480.75,489.30,3.0,476.00,495.00,255.75,Breakout and successful retest of previous resistance. Strong bullish momentum after retest.,meta_breakout.png,2024-04-17 14:25:10
-1013,1,2024-04-18,XAUUSD,short,Overbought RSI,2380.25,2350.75,0.25,2395.00,2340.00,74.38,Gold extremely overbought on RSI with bearish divergence. Short-term correction trade.,gold_overbought.png,2024-04-18 08:30:22
-1014,1,2024-04-19,NFLX,short,Earnings Disappointment,590.50,545.25,2.0,610.00,540.00,90.50,Shorted after earnings missed expectations. Took profits at major support level.,nflx_earnings.png,2024-04-19 10:05:15
-1015,1,2024-04-22,AUDUSD,long,Triple Bottom,0.6580,0.6630,1.5,0.6555,0.6660,75.00,Triple bottom pattern with increasing bullish momentum. Confirmation with break of minor resistance.,audusd_triple_bottom.png,2024-04-22 22:15:30
-1016,1,2024-04-23,MSFT,long,Trend Following,402.25,406.50,4.0,399.00,410.00,170.00,Bought pullback in strong uptrend. 20EMA acted as support.,msft_trend.png,2024-04-23 13:50:17
-1017,1,2024-04-24,EURJPY,short,Channel Breakdown,166.80,165.30,0.75,167.50,164.50,112.50,Price broke down from ascending channel with increased momentum.,eurjpy_channel.png,2024-04-24 15:40:22
-1018,1,2024-04-25,SOLUSDT,long,Support Zone,145.25,156.50,25.0,140.00,160.00,283.13,Strong accumulation at key support zone. Volume analysis showed whales buying.,sol_support.png,2024-04-25 09:20:15
-1019,1,2024-04-26,ES1!,short,Rising Wedge,5125.50,5080.25,0.5,5150.00,5050.00,226.25,Futures broke down from rising wedge pattern. Added to position on retest of breakdown level.,es_wedge.png,2024-04-26 14:35:30
+id,user_id,date,symbol,trade_type,broker,strategy,entry_price,exit_price,size,stop_loss,take_profit,pnl,notes,screenshot
+101demo,demo,2024-04-01,BTCUSD,long,Binance,Support Bounce,64250.50,65750.25,0.1,63500.00,67000.00,150.00,Bitcoin bounced exactly at the support zone. Multiple timeframe confirmation.,btc_support_bounce.png
+102demo,demo,2024-04-02,EURUSD,long,XM,Breakout,1.0725,1.0792,1.0,1.0690,1.0830,67.00,Strong breakout above resistance with increased volume. Took profits at R:R 2:1.,eurusd_breakout.png
+103demo,demo,2024-04-03,AAPL,short,IBKR,Double Top,169.75,165.30,5.0,171.50,164.00,222.50,Clear double top pattern with divergence on RSI. Textbook setup.,aapl_double_top.png
+104demo,demo,2024-04-04,GBPJPY,long,Oanda,Trend Continuation,189.50,190.75,0.5,188.75,192.00,62.50,Pullback to the 20EMA in an uptrend. Price action confirmed with bullish engulfing candle.,gbpjpy_trend.png
+105demo,demo,2024-04-05,TSLA,short,IBKR,Head and Shoulders,175.25,168.40,2.0,178.50,165.00,137.00,Clear head and shoulders pattern completed with neckline break. Volume increased on breakdown.,tsla_h_and_s.png
+106demo,demo,2024-04-08,XAUUSD,long,XM,Fibonacci Retracement,2320.75,2345.50,0.5,2305.00,2360.00,124.38,Gold pulled back to 0.618 Fibonacci level and held support. Added on confirmation candle.,gold_fib.png
+107demo,demo,2024-04-09,USDJPY,short,Oanda,Resistance Rejection,151.80,150.25,1.0,152.50,149.00,155.00,Strong rejection at major resistance level with bearish engulfing candle. Central bank intervention fears helped the move.,usdjpy_resistance.png
+108demo,demo,2024-04-10,AMZN,long,IBKR,Gap Up,180.25,183.50,3.0,178.50,185.00,97.50,Gap up after positive earnings. Bought on first pullback with support from VWAP.,amzn_gap.png
+109demo,demo,2024-04-11,ETHUSD,short,Binance,Bearish Divergence,3125.75,3050.20,0.25,3175.00,3000.00,18.89,RSI showed clear bearish divergence on 4H chart. Took half profits at first target.,eth_divergence.png
+110demo,demo,2024-04-12,SPY,long,IBKR,Trendline Bounce,500.25,504.50,10.0,498.00,507.00,425.00,Market bounced precisely off the ascending trendline with strong buying volume.,spy_trendline.png
+111demo,demo,2024-04-15,NVDA,long,IBKR,Cup and Handle,875.50,890.25,2.0,865.00,905.00,295.00,Textbook cup and handle pattern. Waited for breakout confirmation before entry.,nvda_cup_handle.png
+112demo,demo,2024-04-16,USDCAD,short,XM,Double Top,1.3780,1.3720,1.0,1.3820,1.3680,60.00,Double top at key resistance level. Sold on breakdown with confirmation.,usdcad_double_top.png
+113demo,demo,2024-04-17,META,long,IBKR,Breakout Retest,480.75,489.30,3.0,476.00,495.00,255.75,Breakout and successful retest of previous resistance. Strong bullish momentum after retest.,meta_breakout.png
+114demo,demo,2024-04-18,XAUUSD,short,XM,Overbought RSI,2380.25,2350.75,0.25,2395.00,2340.00,74.38,Gold extremely overbought on RSI with bearish divergence. Short-term correction trade.,gold_overbought.png
+115demo,demo,2024-04-19,NFLX,short,IBKR,Earnings Disappointment,590.50,545.25,2.0,610.00,540.00,90.50,Shorted after earnings missed expectations. Took profits at major support level.,nflx_earnings.png
+116demo,demo,2024-04-22,AUDUSD,long,Oanda,Triple Bottom,0.6580,0.6630,1.5,0.6555,0.6660,75.00,Triple bottom pattern with increasing bullish momentum. Confirmation with break of minor resistance.,audusd_triple_bottom.png
+117demo,demo,2024-04-23,MSFT,long,IBKR,Trend Following,402.25,406.50,4.0,399.00,410.00,170.00,Bought pullback in strong uptrend. 20EMA acted as support.,msft_trend.png
+118demo,demo,2024-04-24,EURJPY,short,XM,Channel Breakdown,166.80,165.30,0.75,167.50,164.50,112.50,Price broke down from ascending channel with increased momentum.,eurjpy_channel.png
+119demo,demo,2024-04-25,SOLUSDT,long,Binance,Support Zone,145.25,156.50,25.0,140.00,160.00,283.13,Strong accumulation at key support zone. Volume analysis showed whales buying.,sol_support.png
+120demo,demo,2024-04-26,ES1!,short,IBKR,Rising Wedge,5125.50,5080.25,0.5,5150.00,5050.00,226.25,Futures broke down from rising wedge pattern. Added to position on retest of breakdown level.,es_wedge.png 
