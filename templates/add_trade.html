@@ -26,6 +26,28 @@
             background-color: rgba(124, 58, 237, 0.2);
             border-left: 3px solid rgb(124, 58, 237);
         }
+        
+        /* Custom Select Styling */
+        select option {
+            background-color: #171923 !important; /* Tailwind bg-gray-900 equivalent */
+            color: white !important;
+        }
+        
+        select {
+            appearance: auto; /* Ensure native appearance on all browsers */
+        }
+        
+        /* Force dark styling for inputs in all states */
+        input, select, textarea {
+            background-color: #171923 !important; 
+            color: white !important;
+        }
+        
+        /* Fix Chrome autofill background color */
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px #171923 inset !important;
+            -webkit-text-fill-color: white !important;
+        }
     </style>
 </head>
 <body class="gradient-bg text-gray-100">
@@ -97,69 +119,69 @@
                 <div class="card">
                     <div class="p-6">
                         <form id="trade-form" action="{{ url_for('add_trade') }}" method="POST" enctype="multipart/form-data">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                <!-- Trade Date -->
+                                <!-- Date -->
                                 <div class="sm:col-span-3">
                                     <label for="date" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
-                                    <input type="date" name="date" id="date" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" required>
+                                    <input type="date" name="date" id="date" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" required>
                                 </div>
 
                                 <!-- Symbol/Pair -->
                                 <div class="sm:col-span-3">
                                     <label for="symbol" class="block text-sm font-medium text-gray-300 mb-1">Symbol/Pair</label>
-                                    <input type="text" name="symbol" id="symbol" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. BTCUSD, EURUSD, AAPL" required>
+                                    <input type="text" name="symbol" id="symbol" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. BTCUSD, EURUSD, AAPL" required>
                                 </div>
 
                                 <!-- Trade Type -->
                                 <div class="sm:col-span-3">
                                     <label for="trade_type" class="block text-sm font-medium text-gray-300 mb-1">Trade Type</label>
-                                    <select id="trade_type" name="trade_type" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" required>
-                                        <option value="long">Long</option>
-                                        <option value="short">Short</option>
+                                    <select id="trade_type" name="trade_type" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" required>
+                                        <option value="long" class="bg-gray-900 text-white">Long</option>
+                                        <option value="short" class="bg-gray-900 text-white">Short</option>
                                     </select>
                                 </div>
 
                                 <!-- Broker -->
                                 <div class="sm:col-span-3">
                                     <label for="broker" class="block text-sm font-medium text-gray-300 mb-1">Broker</label>
-                                    <input type="text" name="broker" id="broker" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. Binance, XM, IBKR">
+                                    <input type="text" name="broker" id="broker" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. Binance, XM, IBKR">
                                 </div>
 
                                 <!-- Strategy -->
                                 <div class="sm:col-span-3">
                                     <label for="strategy" class="block text-sm font-medium text-gray-300 mb-1">Strategy</label>
-                                    <input type="text" name="strategy" id="strategy" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. Breakout, Support/Resistance" required>
+                                    <input type="text" name="strategy" id="strategy" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="e.g. Breakout, Support/Resistance" required>
                                 </div>
 
                                 <!-- Entry Price -->
                                 <div class="sm:col-span-2">
                                     <label for="entry_price" class="block text-sm font-medium text-gray-300 mb-1">Entry Price</label>
-                                    <input type="number" name="entry_price" id="entry_price" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001" required>
+                                    <input type="number" name="entry_price" id="entry_price" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001" required>
                                 </div>
 
                                 <!-- Exit Price -->
                                 <div class="sm:col-span-2">
                                     <label for="exit_price" class="block text-sm font-medium text-gray-300 mb-1">Exit Price</label>
-                                    <input type="number" name="exit_price" id="exit_price" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001" required>
+                                    <input type="number" name="exit_price" id="exit_price" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001" required>
                                 </div>
 
                                 <!-- Position Size -->
                                 <div class="sm:col-span-2">
                                     <label for="size" class="block text-sm font-medium text-gray-300 mb-1">Position Size</label>
-                                    <input type="number" name="size" id="size" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.01" required>
+                                    <input type="number" name="size" id="size" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.01" required>
                                 </div>
 
                                 <!-- Stop Loss -->
                                 <div class="sm:col-span-3">
                                     <label for="stop_loss" class="block text-sm font-medium text-gray-300 mb-1">Stop Loss</label>
-                                    <input type="number" name="stop_loss" id="stop_loss" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001">
+                                    <input type="number" name="stop_loss" id="stop_loss" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001">
                                 </div>
 
                                 <!-- Take Profit -->
                                 <div class="sm:col-span-3">
                                     <label for="take_profit" class="block text-sm font-medium text-gray-300 mb-1">Take Profit</label>
-                                    <input type="number" name="take_profit" id="take_profit" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001">
+                                    <input type="number" name="take_profit" id="take_profit" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" step="0.00000001">
                                 </div>
 
                                 <!-- Trade Result -->
@@ -183,7 +205,7 @@
                                 <!-- Notes -->
                                 <div class="sm:col-span-6">
                                     <label for="notes" class="block text-sm font-medium text-gray-300 mb-1">Notes</label>
-                                    <textarea id="notes" name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="What went well? What could be improved? Any observations?"></textarea>
+                                    <textarea id="notes" name="notes" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white" placeholder="What went well? What could be improved? Any observations?"></textarea>
                                 </div>
 
                                 <!-- Screenshot Upload -->

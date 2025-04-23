@@ -138,7 +138,7 @@ footer a:hover {
 
 /* Updated Gradients */
 .gradient-bg {
-  background: linear-gradient(135deg, #1e1e2e 0%, #2d2b42 100%);
+  background: linear-gradient(130deg, #13111C 0%, #1A1625 100%);
   min-height: 100vh;
 }
 
@@ -516,10 +516,10 @@ canvas {
 }
 
 .glass-container {
-    background-color: rgba(30, 30, 46, 0.6);
+    background-color: rgba(30, 30, 46, 0.7);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Form Elements */
@@ -959,4 +959,86 @@ body.gradient-bg {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+/* Custom styling for form inputs and selects */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background-color: #171923 !important; /* Dark background - equivalent to bg-gray-900 */
+    color: white !important;
+    border-color: rgba(74, 85, 104, 0.5) !important; /* border-gray-700 */
+}
+
+/* Fix input background color when filled/active */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #171923 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Override browser's behavior for filled inputs */
+input:not(:placeholder-shown) {
+    background-color: #171923 !important;
+    color: white !important;
+}
+
+/* Ensure input remains dark even after selection */
+input::selection {
+    background-color: rgba(124, 58, 237, 0.5) !important;
+    color: white !important;
+}
+
+/* Styling for select dropdown options */
+select option {
+    background-color: #171923 !important;
+    color: white !important;
+}
+
+/* Ensure select has proper appearance */
+select {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+    background-color: #171923 !important;
+    color: white !important;
+}
+
+/* Fix placeholder text color */
+input::placeholder {
+    color: rgba(160, 174, 192, 0.7) !important; /* text-gray-400 */
+}
+
+/* Global fix for input text color */
+/* This needs to be somewhere near the top of the file to prevent overrides */
+
+/* Input color fixes - forced important to override browser defaults */
+input, select, textarea, 
+input:focus, select:focus, textarea:focus,
+input:hover, select:hover, textarea:hover,
+input:active, select:active, textarea:active,
+input:visited, select:visited, textarea:visited,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+    background-color: #171923 !important;
+    color: white !important;
+    caret-color: white !important;
+}
+
+/* Remove browser's autocomplete background color */
+input:-webkit-autofill,
+input:-internal-autofill-selected,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 50px #171923 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+    background-color: #171923 !important;
 }

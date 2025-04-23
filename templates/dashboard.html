@@ -265,6 +265,56 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Additional Analytics Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <!-- Monthly Performance -->
+                    <div class="card">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Monthly Performance</h2>
+                            <div class="h-64">
+                                <canvas id="monthlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Day of Week Analysis -->
+                    <div class="card">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Day of Week Analysis</h2>
+                            <div class="h-64">
+                                <canvas id="dowChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trading Metrics Section -->
+                <div class="grid grid-cols-1 mt-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Trading Metrics</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div class="metric-card p-4 rounded-lg bg-gray-800 bg-opacity-50">
+                                    <h3 class="text-sm font-medium text-gray-400">Average Win</h3>
+                                    <p class="text-xl font-bold text-green-400">${{ avg_win|default('0.00') }}</p>
+                                </div>
+                                <div class="metric-card p-4 rounded-lg bg-gray-800 bg-opacity-50">
+                                    <h3 class="text-sm font-medium text-gray-400">Average Loss</h3>
+                                    <p class="text-xl font-bold text-red-400">${{ avg_loss|default('0.00') }}</p>
+                                </div>
+                                <div class="metric-card p-4 rounded-lg bg-gray-800 bg-opacity-50">
+                                    <h3 class="text-sm font-medium text-gray-400">Largest Win</h3>
+                                    <p class="text-xl font-bold text-green-400">${{ max_win|default('0.00') }}</p>
+                                </div>
+                                <div class="metric-card p-4 rounded-lg bg-gray-800 bg-opacity-50">
+                                    <h3 class="text-sm font-medium text-gray-400">Largest Loss</h3>
+                                    <p class="text-xl font-bold text-red-400">${{ max_loss|default('0.00') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -284,6 +334,8 @@
         const pnlChartData = JSON.parse('{{ chart_data|tojson|safe }}');
         const strategyData = JSON.parse('{{ strategy_data|tojson|safe }}');
         const symbolData = JSON.parse('{{ symbol_data|tojson|safe }}');
+        const monthlyData = JSON.parse('{{ monthly_data|tojson|safe }}');
+        const dowData = JSON.parse('{{ dow_data|tojson|safe }}');
 
         // P&L Chart
         const pnlCtx = document.getElementById('pnlChart').getContext('2d');
@@ -376,6 +428,18 @@
                     backgroundColor: strategyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
                     borderColor: strategyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'),
                     borderWidth: 1
+                },
+                {
+                    label: 'Win Rate %',
+                    data: strategyData.win_rates,
+                    type: 'line',
+                    yAxisID: 'y1',
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
                 }]
             },
             options: {
@@ -395,30 +459,37 @@
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)'
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return '$' + value;
+                            }
                         }
+                    },
+                    y1: {
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        min: 0,
+                        max: 100
                     }
                 },
                 plugins: {
                     legend: {
-                        display: false
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
                     },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         titleColor: 'rgba(255, 255, 255, 1)',
                         bodyColor: 'rgba(255, 255, 255, 0.8)',
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        }
                     }
                 }
             }
@@ -480,6 +551,163 @@
                                 return label;
                             }
                         }
+                    }
+                }
+            }
+        });
+        
+        // Monthly Performance Chart
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthlyData.months,
+                datasets: [{
+                    label: 'Monthly P&L',
+                    data: monthlyData.pnl,
+                    backgroundColor: monthlyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                    borderColor: monthlyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'),
+                    borderWidth: 1
+                },
+                {
+                    label: 'Trade Count',
+                    data: monthlyData.count,
+                    type: 'line',
+                    yAxisID: 'y1',
+                    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                    borderColor: 'rgba(251, 191, 36, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(251, 191, 36, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: 'rgba(255, 255, 255, 1)',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
+                    }
+                }
+            }
+        });
+        
+        // Day of Week Analysis Chart
+        const dowCtx = document.getElementById('dowChart').getContext('2d');
+        
+        new Chart(dowCtx, {
+            type: 'bar',
+            data: {
+                labels: dowData.days,
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: dowData.win_rates,
+                    backgroundColor: 'rgba(124, 58, 237, 0.7)',
+                    borderColor: 'rgba(124, 58, 237, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Average P&L',
+                    data: dowData.avg_pnl,
+                    type: 'line',
+                    yAxisID: 'y1',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        max: 100,
+                        min: 0
+                    },
+                    y1: {
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: 'rgba(255, 255, 255, 1)',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
                     }
                 }
             }

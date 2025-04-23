@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file, Response
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from wtforms import StringField, PasswordField, SubmitField, SelectField, FloatField, DateField, TextAreaField, FileField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange
 import os
@@ -32,6 +32,8 @@ import string
 from io import StringIO, BytesIO
 import traceback
 from urllib.parse import urlparse
+from flask_sqlalchemy import SQLAlchemy
+from models import db, User, Trade
 
 # Load environment variables
 load_dotenv()
@@ -52,6 +54,18 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['DATA_FOLDER'] = 'data'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.permanent_session_lifetime = timedelta(days=7)
+
+# Configure the SQLAlchemy part of the app
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///trading_journal')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db.init_app(app)
+
+# Initialize legacy in-memory data structures
+# These will be removed in future versions once all code is migrated to use the database
+users = {}  # Legacy in-memory user storage
+trades_db = {}  # Legacy in-memory trade storage
 
 # Add min function to Jinja globals
 app.jinja_env.globals.update(min=min, max=max)
@@ -75,6 +89,11 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.co
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
 
+# Simplified CSRF handling - let Flask-WTF handle it
+@app.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=generate_csrf())
+
 # Email verification token generator
 ts = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
@@ -87,30 +106,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# User model
-class User(UserMixin):
-    def __init__(self, id, username, email, password_hash, is_verified=False, google_id=None):
-        self.id = id
-        self.username = username
-        self.email = email
-        self.password_hash = password_hash
-        self.is_verified = is_verified
-        self.google_id = google_id
-
-# User database (in-memory for demo)
-users = {}
-trades_db = {}  # Dictionary to store user trades
-
-# Add demo user
-demo_password = generate_password_hash('demo')
-users['demo'] = User(
-    id='demo',
-    username='demo',
-    email='demo@example.com',
-    password_hash=demo_password,
-    is_verified=True  # Demo user is verified by default
-)
-trades_db['demo'] = []
+# User loader for Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Helper functions for email verification and Google authentication
 def send_verification_email(user_email, token):
@@ -120,7 +119,7 @@ def send_verification_email(user_email, token):
     msg['From'] = app.config['MAIL_DEFAULT_SENDER']
     msg['To'] = user_email
     
-    verification_url = url_for('verify_email', token=token, _external=True)
+    verification_url = token
     
     # Plain text version
     text = f"""
@@ -245,16 +244,11 @@ def get_google_provider_cfg():
         print(f"Unexpected error when getting Google provider configuration: {e}")
         return None
 
-# User loader for Flask-Login
-@login_manager.user_loader
-def load_user(user_id):
-    return users.get(user_id)
-
 # Forms
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
+    remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
 class RegisterForm(FlaskForm):
@@ -281,63 +275,60 @@ class TradeForm(FlaskForm):
 
 # Helper functions
 def get_user_trades(user_id):
-    """Get trades for the current user"""
-    if not os.path.exists(f"{app.config['DATA_FOLDER']}/trades.csv"):
-        # If the file doesn't exist, return an empty dataframe with the expected columns
-        return pd.DataFrame(columns=[
-            "id", "date", "symbol", "entry_price", "exit_price", "size",
-            "stop_loss", "take_profit", "pnl", "trade_type", 
-            "strategy", "notes", "screenshot", "user_id"
-        ])
-    
+    """Get trades for the current user from the database"""
     try:
-        # Read all trades
-        trades_df = pd.read_csv(f"{app.config['DATA_FOLDER']}/trades.csv")
+        # Get trades from database
+        user_trades = Trade.query.filter_by(user_id=user_id).all()
         
-        # Check if the CSV has user identification column
-        user_column = "user_id"
-        if "user_email" in trades_df.columns:
-            user_column = "user_email"
-        elif "user_id" not in trades_df.columns:
-            # If no user column exists yet, return the in-memory trades
-            return pd.DataFrame(trades_db.get(user_id, []))
+        # Convert to list of dictionaries
+        trades_list = [trade.to_dict() for trade in user_trades]
         
-        # Filter for current user
-        if user_id in trades_df[user_column].values:
-            user_trades = trades_df[trades_df[user_column] == user_id]
-            return user_trades
-        
-        # If user has no trades in the CSV but has in-memory trades, use those
-        if user_id in trades_db:
-            return pd.DataFrame(trades_db[user_id])
-        
-        return pd.DataFrame()
+        # Convert to DataFrame
+        if trades_list:
+            df = pd.DataFrame(trades_list)
+            # Rename profit_loss column to pnl for compatibility with existing code
+            if 'profit_loss' in df.columns:
+                df['pnl'] = df['profit_loss']  
+            return df
+        else:
+            # Return empty DataFrame with expected columns
+            return pd.DataFrame(columns=[
+                "id", "user_id", "date", "symbol", "entry_price", "exit_price", "size",
+                "stop_loss", "take_profit", "pnl", "trade_type", 
+                "strategy", "notes", "screenshot_path"
+            ])
     except Exception as e:
-        print(f"Error reading trades: {e}")
-        # Fallback to in-memory trades
-        return pd.DataFrame(trades_db.get(user_id, []))
+        print(f"Error getting user trades from database: {e}")
+        # Return empty DataFrame with expected columns
+        return pd.DataFrame(columns=[
+            "id", "user_id", "date", "symbol", "entry_price", "exit_price", "size",
+            "stop_loss", "take_profit", "pnl", "trade_type", 
+            "strategy", "notes", "screenshot_path"
+        ])
 
 def load_demo_trades(user_id="demo"):
-    """Load demo trades from CSV for the demo user"""
+    """Load demo trades from the database for the demo user"""
     try:
-        # Check if trades.csv exists
-        if not os.path.exists(f"{app.config['DATA_FOLDER']}/trades.csv"):
-            print("Demo trades file not found")
-            return []
+        # Get demo user
+        demo_user = User.query.filter_by(username="Demo User").first()
         
-        # Read the CSV file
-        trades_df = pd.read_csv(f"{app.config['DATA_FOLDER']}/trades.csv")
-        
-        # Filter for demo trades
-        demo_trades = trades_df[trades_df['user_id'] == user_id].to_dict(orient='records')
-        
-        # If no demo trades found, return empty list
-        if not demo_trades:
-            print("No demo trades found in CSV")
+        if not demo_user:
+            print("Demo user not found")
             return []
             
-        print(f"Loaded {len(demo_trades)} demo trades")
-        return demo_trades
+        # Get trades from database
+        demo_trades = Trade.query.filter_by(user_id=demo_user.id).all()
+        
+        # Convert to list of dictionaries
+        trades_list = [trade.to_dict() for trade in demo_trades]
+        
+        # Add pnl field for compatibility
+        for trade in trades_list:
+            if 'profit_loss' in trade:
+                trade['pnl'] = trade['profit_loss']
+                
+        print(f"Loaded {len(trades_list)} demo trades")
+        return trades_list
     except Exception as e:
         print(f"Error loading demo trades: {e}")
         return []
@@ -396,108 +387,58 @@ def login():
     
     form = LoginForm()
     
-    # Check for error parameter and display as flash message
-    error = request.args.get('error')
-    if error:
-        flash(error, 'danger')
-    
-    # Handle form submission
-    if form.validate_on_submit():
-        # Extract form data
-        email = form.email.data
-        password = form.password.data
-        remember = form.remember_me.data
-        
-        # Check if user exists
-        user_found = None
-        for user in users.values():
-            if user.email == email:
-                user_found = user
-                break
-                
-        if user_found:
-            # Try to validate password using both methods for compatibility
-            password_valid = False
-            
-            # Try the werkzeug password hash first
-            try:
-                if check_password_hash(user_found.password_hash, password):
-                    password_valid = True
-            except Exception as e:
-                print(f"Werkzeug password check failed: {str(e)}")
-            
-            # If werkzeug check failed, try bcrypt
-            if not password_valid:
-                try:
-                    import bcrypt
-                    if bcrypt.checkpw(password.encode('utf-8'), user_found.password_hash.encode('utf-8')):
-                        password_valid = True
-                except Exception as e:
-                    print(f"Bcrypt password check failed: {str(e)}")
-            
-            if password_valid:
-                login_user(user_found, remember=remember)
-                
-                # Check if the user came from a specific page
-                next_page = request.args.get('next')
-                if not next_page or urlparse(next_page).netloc != '':
-                    next_page = url_for('dashboard')
-                    
-                return redirect(next_page)
-            else:
-                flash("Invalid email or password", "danger")
-        else:
-            # User not found
-            flash("Invalid email or password", "danger")
-            
     # For demo login
-    if 'demo_login' in request.args:
+    if 'demo_login' in request.args or request.args.get('demo') == 'true':
         # Check if demo user exists
         demo_email = "demo@example.com"
-        demo_user = None
-        
-        for user in users.values():
-            if user.email == demo_email:
-                demo_user = user
-                break
+        demo_user = User.query.filter_by(email=demo_email).first()
                 
         if demo_user:
             login_user(demo_user)
-            
-            # Ensure demo user has demo trades loaded
-            if demo_user.id in trades_db and not trades_db[demo_user.id]:
-                # Reload demo trades in case they were deleted
-                demo_trades = load_demo_trades("demo")
-                trades_db[demo_user.id] = demo_trades
-                print(f"Reloaded {len(demo_trades)} demo trades for existing demo user")
-                
             return redirect(url_for('dashboard'))
         else:
             # Create demo user if it doesn't exist
-            user_id = "demo"  # Use 'demo' as the user_id for consistent identification
-            password_hash = generate_password_hash("demo")
-            
-            new_user = User(
-                id=user_id,
-                username="Demo User",
-                email=demo_email,
-                password_hash=password_hash,
-                is_verified=True
-            )
-            
-            users[user_id] = new_user
-            
-            # Load demo trades for the demo user
-            demo_trades = load_demo_trades(user_id)
-            trades_db[user_id] = demo_trades
-            print(f"Loaded {len(demo_trades)} demo trades for new demo user")
-            
-            # Log in demo user
-            login_user(new_user)
-            return redirect(url_for('dashboard'))
+            with app.app_context():
+                demo_user = User(
+                    username="Demo User",
+                    email=demo_email,
+                    password_hash=generate_password_hash("demo"),
+                    is_verified=True
+                )
+                
+                db.session.add(demo_user)
+                db.session.commit()
+                
+                # Log in demo user
+                login_user(demo_user)
+                return redirect(url_for('dashboard'))
     
-    # Render the login template
-    return render_template('login.html', form=form, google_client_id=app.config['GOOGLE_CLIENT_ID'])
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        remember = form.remember.data
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        
+        # Check if user exists and password is correct
+        if user and check_password_hash(user.password_hash, password):
+            # Check if user is verified
+            if not user.is_verified and app.config.get('VERIFY_USERS', False):
+                flash('Please verify your email before logging in.', 'warning')
+                return render_template('login.html', form=form)
+                
+            # Log in the user
+            login_user(user, remember=remember)
+            flash('Login successful!', 'success')
+            
+            # Redirect to the page the user was trying to access or to dashboard
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('dashboard'))
+        else:
+            flash('Invalid email or password', 'danger')
+    
+    return render_template('login.html', form=form)
 
 @app.route('/login/google')
 def google_login():
@@ -603,7 +544,8 @@ def google_callback():
             
             # Check if user is verified
             if not userinfo_response.json().get("email_verified"):
-                return redirect(url_for("login", error="Email not verified with Google"))
+                flash("Email not verified with Google", "danger")
+                return redirect(url_for("login"))
                 
             # Get user data
             users_email = userinfo_response.json()["email"]
@@ -613,136 +555,113 @@ def google_callback():
         except Exception as e:
             print(f"Error retrieving Google user info: {str(e)}")
             print(f"Traceback: {traceback.format_exc()}")
-            return redirect(url_for("login", error="Failed to get user info from Google"))
+            flash("Failed to get user info from Google", "danger")
+            return redirect(url_for("login"))
         
-        # Check if user exists
+        # Check if user exists in database
         try:
             print(f"Searching for existing user with email: {users_email}")
-            existing_user = None
-            for user_id, user in users.items():
-                if user.email == users_email:
-                    existing_user = user
-                    print(f"Found existing user: {user.username} (ID: {user.id})")
-                    break
+            existing_user = User.query.filter_by(email=users_email).first()
                     
             if existing_user:
+                # Update Google ID if not already set
+                if not existing_user.google_id:
+                    existing_user.google_id = google_id
+                    db.session.commit()
+                    
                 # Log in existing user
                 print(f"Logging in existing user: {existing_user.username}")
                 login_user(existing_user)
                 print("User logged in successfully")
+                flash("Logged in successfully!", "success")
                 return redirect(url_for("dashboard"))
                 
             # Create a new user
-            user_id = str(uuid.uuid4())
-            print(f"Creating new user with ID: {user_id}")
-            
-            # Generate random password for the new user since they're logging in with Google
-            password = secrets.token_urlsafe(16)
-            password_hash = generate_password_hash(password)
-            print("Generated and hashed random password")
-            
-            # Create the user
             new_user = User(
-                id=user_id,
                 username=users_name,
                 email=users_email,
-                password_hash=password_hash,
-                is_verified=True,  # Google has already verified their email
-                google_id=google_id
+                password_hash="google_oauth",  # Not used for OAuth login
+                google_id=google_id,
+                is_verified=True  # Google accounts are already verified
             )
             
-            # Store the user
-            users[user_id] = new_user
+            # Add new user to database
+            db.session.add(new_user)
+            db.session.commit()
             
-            # Initialize trades list for the new user
-            trades_db[user_id] = []
-            
-            # Load demo trades for the new user
-            demo_trades = load_demo_trades(user_id)
-            trades_db[user_id].extend(demo_trades)
-            
-            # Save users data
-            save_users()
-            print(f"Created and saved new user: {users_name} (ID: {user_id})")
-            
-            # Log in the user
+            # Log in new user
             login_user(new_user)
-            print("User logged in successfully")
-            
+            flash("Account created and logged in successfully!", "success")
             return redirect(url_for("dashboard"))
+            
         except Exception as e:
-            print(f"Error creating or logging in user: {str(e)}")
+            print(f"Error processing user login/creation: {str(e)}")
             print(f"Traceback: {traceback.format_exc()}")
-            return redirect(url_for("login", error="Error creating account"))
+            flash("An error occurred during login. Please try again.", "danger")
+            return redirect(url_for("login"))
+            
     except Exception as e:
-        print(f"Unexpected error during Google callback: {str(e)}")
+        print(f"Unhandled error in Google callback: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
-        return redirect(url_for("login", error="Authentication failed"))
+        flash("An error occurred. Please try again later.", "danger")
+        return redirect(url_for("login"))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Handle user registration"""
+    # Check if user is already logged in
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
     form = RegisterForm()
     
-    # Get Google OAuth authorization URL
-    google_auth_url = None
-    google_client_id = app.config['GOOGLE_CLIENT_ID']
-    if app.config['GOOGLE_CLIENT_ID'] and app.config['GOOGLE_CLIENT_SECRET']:
-        try:
-            # Get authorization endpoint from Google discovery URL
-            google_provider_cfg = get_google_provider_cfg()
-            if google_provider_cfg:
-                authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-                
-                # Generate authorization URL
-                google_auth_url = client.prepare_request_uri(
-                    authorization_endpoint,
-                    redirect_uri=url_for('google_callback', _external=True),
-                    scope=["openid", "email", "profile"]
-                )
-        except Exception as e:
-            print(f"Error creating Google Auth URL: {e}")
-    
     if form.validate_on_submit():
-        for user in users.values():
-            if user.email == form.email.data:
-                flash('Email already registered')
-                return render_template('register.html', form=form, google_auth_url=google_auth_url, google_client_id=google_client_id)
-            if user.username == form.username.data:
-                flash('Username already taken')
-                return render_template('register.html', form=form, google_auth_url=google_auth_url, google_client_id=google_client_id)
+        # Extract form data
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
         
-        user_id = str(uuid.uuid4())
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email address already registered', 'danger')
+            return render_template('register.html', form=form)
         
-        # Create user (not verified yet)
-        users[user_id] = User(
-            id=user_id,
-            username=form.username.data,
-            email=form.email.data,
-            password_hash=generate_password_hash(form.password.data),
+        # Check if username already exists
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            flash('Username already taken', 'danger')
+            return render_template('register.html', form=form)
+            
+        # Create new user
+        password_hash = generate_password_hash(password)
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=password_hash,
             is_verified=False
         )
-        trades_db[user_id] = []
         
-        # Generate and send verification token
-        token = generate_confirmation_token(form.email.data)
+        # Add user to database
+        db.session.add(new_user)
+        db.session.commit()
         
-        if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD']:
-            # Send verification email
-            if send_verification_email(form.email.data, token):
-                flash('Registration successful! Please check your email to verify your account.')
-            else:
-                flash('Registration successful, but failed to send verification email. Please contact support.')
-        else:
-            # For development without email setup, auto-verify the account
-            users[user_id].is_verified = True
-            flash('Registration successful! Your account is verified (email verification skipped in development mode).')
+        # Generate email verification token
+        token = generate_confirmation_token(email)
+        
+        # Send verification email
+        verify_url = url_for('verify_email', token=token, _external=True)
+        
+        try:
+            send_verification_email(email, verify_url)
+            flash('Registration successful! Please check your email to verify your account.', 'success')
+        except Exception as e:
+            print(f"Error sending verification email: {e}")
+            flash('Registration successful! However, there was an issue sending the verification email.', 'warning')
         
         return redirect(url_for('login'))
     
-    return render_template('register.html', form=form, google_auth_url=google_auth_url, google_client_id=google_client_id)
+    return render_template('register.html', form=form)
 
 @app.route('/verify_email/<token>')
 def verify_email(token):
@@ -753,11 +672,13 @@ def verify_email(token):
         flash('The verification link is invalid or has expired.', 'danger')
         return redirect(url_for('login'))
     
-    for user_id, user in users.items():
-        if user.email == email:
-            user.is_verified = True
-            flash('Your email has been verified. You can now log in.', 'success')
-            return redirect(url_for('login'))
+    user_to_verify = User.query.filter_by(email=email).first()
+    
+    if user_to_verify:
+        user_to_verify.is_verified = True
+        db.session.commit()
+        flash('Your email has been verified. You can now log in.', 'success')
+        return redirect(url_for('login'))
     
     flash('User not found.', 'danger')
     return redirect(url_for('login'))
@@ -770,11 +691,7 @@ def resend_verification():
         flash('Email address is required.')
         return redirect(url_for('login'))
     
-    user_to_verify = None
-    for user in users.values():
-        if user.email == email:
-            user_to_verify = user
-            break
+    user_to_verify = User.query.filter_by(email=email).first()
     
     if not user_to_verify:
         flash('User not found.')
@@ -795,6 +712,7 @@ def resend_verification():
     else:
         # For development, auto-verify
         user_to_verify.is_verified = True
+        db.session.commit()
         flash('Your account has been verified (email verification skipped in development mode).')
     
     return redirect(url_for('login'))
@@ -863,6 +781,26 @@ def dashboard():
                 pass
                 
     total_pnl_formatted = f"${total_pnl:.2f}"
+    
+    # Calculate additional metrics for the metrics section
+    # Average win, average loss, max win, max loss
+    wins = []
+    losses = []
+    
+    for trade in trades:
+        try:
+            pnl = float(trade.get('pnl', 0))
+            if pnl > 0:
+                wins.append(pnl)
+            elif pnl < 0:
+                losses.append(abs(pnl))
+        except (ValueError, TypeError):
+            pass
+    
+    avg_win = round(sum(wins) / len(wins), 2) if wins else 0
+    avg_loss = round(sum(losses) / len(losses), 2) if losses else 0
+    max_win = round(max(wins), 2) if wins else 0
+    max_loss = round(max(losses), 2) if losses else 0
     
     # Format trades for display
     for trade in trades:
@@ -950,9 +888,9 @@ def dashboard():
     
     # Calculate win rates and format for chart
     strategy_data = {
-        'names': list(strategy_performance.keys()),
-        'win_rates': [round((s['wins'] / s['count'] * 100), 1) if s['count'] > 0 else 0 for s in strategy_performance.values()],
-        'pnls': [round(s['pnl'], 2) for s in strategy_performance.values()]
+        'strategies': list(strategy_performance.keys()),
+        'pnl': [round(s['pnl'], 2) for s in strategy_performance.values()],
+        'win_rates': [round((s['wins'] / s['count'] * 100), 1) if s['count'] > 0 else 0 for s in strategy_performance.values()]
     }
     
     # Symbol performance data
@@ -972,7 +910,84 @@ def dashboard():
     # Format for chart
     symbol_data = {
         'symbols': list(symbol_performance.keys()),
-        'pnl_values': [round(s['pnl'], 2) for s in symbol_performance.values()]
+        'pnl': [round(s['pnl'], 2) for s in symbol_performance.values()]
+    }
+    
+    # Monthly performance data
+    monthly_performance = {}
+    
+    for trade in sorted_trades:
+        try:
+            date = pd.to_datetime(trade.get('date'))
+            month_key = date.strftime('%Y-%m')
+            month_label = date.strftime('%b %Y')
+            
+            if month_key not in monthly_performance:
+                monthly_performance[month_key] = {
+                    'label': month_label,
+                    'pnl': 0,
+                    'count': 0
+                }
+            
+            monthly_performance[month_key]['count'] += 1
+            monthly_performance[month_key]['pnl'] += float(trade.get('pnl', 0))
+        except:
+            continue
+    
+    # Sort by month
+    sorted_months = sorted(monthly_performance.items(), key=lambda x: x[0])
+    
+    # Format for chart
+    monthly_data = {
+        'months': [m[1]['label'] for m in sorted_months],
+        'pnl': [round(m[1]['pnl'], 2) for m in sorted_months],
+        'count': [m[1]['count'] for m in sorted_months]
+    }
+    
+    # Day of week analysis
+    dow_performance = {
+        'Monday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Tuesday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Wednesday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Thursday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Friday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Saturday': {'wins': 0, 'total': 0, 'pnl': 0},
+        'Sunday': {'wins': 0, 'total': 0, 'pnl': 0}
+    }
+    
+    for trade in trades:
+        try:
+            date = pd.to_datetime(trade.get('date'))
+            day_name = date.strftime('%A')
+            pnl = float(trade.get('pnl', 0))
+            
+            dow_performance[day_name]['total'] += 1
+            dow_performance[day_name]['pnl'] += pnl
+            if pnl > 0:
+                dow_performance[day_name]['wins'] += 1
+        except:
+            continue
+    
+    # Calculate win rates and average PnL by day
+    dow_win_rates = []
+    dow_avg_pnl = []
+    
+    for day, stats in dow_performance.items():
+        if stats['total'] > 0:
+            win_rate = round((stats['wins'] / stats['total']) * 100, 1)
+            avg_pnl = round(stats['pnl'] / stats['total'], 2)
+        else:
+            win_rate = 0
+            avg_pnl = 0
+        
+        dow_win_rates.append(win_rate)
+        dow_avg_pnl.append(avg_pnl)
+    
+    # Format for chart
+    dow_data = {
+        'days': list(dow_performance.keys()),
+        'win_rates': dow_win_rates,
+        'avg_pnl': dow_avg_pnl
     }
     
     # User info for display
@@ -996,8 +1011,14 @@ def dashboard():
                                pnl_change=0,
                                current_date=current_date,
                                chart_data={"dates": [], "daily_pnl": [], "cumulative_pnl": []},
-                               strategy_data={"names": [], "win_rates": [], "pnls": []},
-                               symbol_data={"symbols": [], "pnl_values": []},
+                               strategy_data={"strategies": [], "pnl": [], "win_rates": []},
+                               symbol_data={"symbols": [], "pnl": []},
+                               monthly_data={"months": [], "pnl": [], "count": []},
+                               dow_data={"days": [], "win_rates": [], "avg_pnl": []},
+                               avg_win=0,
+                               avg_loss=0,
+                               max_win=0,
+                               max_loss=0,
                                user=user,
                                google_client_id=app.config['GOOGLE_CLIENT_ID'])
     
@@ -1017,6 +1038,12 @@ def dashboard():
                            chart_data=chart_data,
                            strategy_data=strategy_data,
                            symbol_data=symbol_data,
+                           monthly_data=monthly_data,
+                           dow_data=dow_data,
+                           avg_win=avg_win,
+                           avg_loss=avg_loss,
+                           max_win=max_win,
+                           max_loss=max_loss,
                            user=user,
                            google_client_id=app.config['GOOGLE_CLIENT_ID'])
 
@@ -1025,68 +1052,32 @@ def dashboard():
 def add_trade():
     form = TradeForm()
     if form.validate_on_submit():
-        trade_id = str(uuid.uuid4())
-        trade_data = {
-            'id': trade_id,
-            'date': form.date.data.strftime('%Y-%m-%d'),
-            'symbol': form.symbol.data.upper(),
-            'trade_type': form.trade_type.data,
-            'broker': form.broker.data,
-            'entry_price': form.entry_price.data,
-            'exit_price': form.exit_price.data,
-            'size': form.size.data,
-            'stop_loss': form.stop_loss.data,
-            'take_profit': form.take_profit.data,
-            'strategy': form.strategy.data,
-            'notes': form.notes.data,
-            'screenshot': None,
-            'user_id': current_user.id
-        }
-        
-        # Calculate P&L
-        trade_data['pnl'] = calculate_pnl(
-            trade_data['entry_price'], 
-            trade_data['exit_price'], 
-            trade_data['size'], 
-            trade_data['trade_type']
+        # Create new Trade object
+        new_trade = Trade(
+            user_id=current_user.id,
+            date=form.date.data,
+            symbol=form.symbol.data.upper(),
+            trade_type=form.trade_type.data,
+            broker=form.broker.data,
+            entry_price=form.entry_price.data,
+            exit_price=form.exit_price.data,
+            size=form.size.data,
+            stop_loss=form.stop_loss.data,
+            take_profit=form.take_profit.data,
+            strategy=form.strategy.data,
+            notes=form.notes.data
         )
-        
-        # Calculate risk/reward ratio if stop loss is provided
-        if form.stop_loss.data:
-            trade_data['risk_reward'] = calculate_risk_reward(
-                trade_data['entry_price'],
-                trade_data['exit_price'],
-                trade_data['stop_loss']
-            )
         
         # Handle screenshot upload
         if form.screenshot.data:
-            filename = secure_filename(f"{current_user.id}_{trade_id}_{form.screenshot.data.filename}")
+            filename = secure_filename(f"{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{form.screenshot.data.filename}")
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             form.screenshot.data.save(file_path)
-            trade_data['screenshot'] = filename
+            new_trade.screenshot_path = filename
         
-        # Save the trade to in-memory database
-        if current_user.id not in trades_db:
-            trades_db[current_user.id] = []
-        trades_db[current_user.id].append(trade_data)
-        
-        # Save to CSV
-        try:
-            # Convert to dataframe
-            trade_df = pd.DataFrame([trade_data])
-            
-            if os.path.exists(f"{app.config['DATA_FOLDER']}/trades.csv"):
-                # Append to existing file
-                existing_trades = pd.read_csv(f"{app.config['DATA_FOLDER']}/trades.csv")
-                updated_trades = pd.concat([existing_trades, trade_df], ignore_index=True)
-                updated_trades.to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
-            else:
-                # Create new file
-                trade_df.to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
-        except Exception as e:
-            print(f"Error saving trade to CSV: {e}")
-            # Continue as we still have it saved in memory
+        # Add and commit to database
+        db.session.add(new_trade)
+        db.session.commit()
         
         flash('Trade added successfully!')
         return redirect(url_for('dashboard'))
@@ -1138,34 +1129,164 @@ def trades():
             except (ValueError, TypeError):
                 # If it's a string that can't be converted to float, use as is
                 trade['pnl_formatted'] = f"${trade['pnl']}"
+                
+        # Format date if not already
+        if 'date' in trade and isinstance(trade['date'], str) and len(trade['date'].split('-')) == 3:
+            try:
+                date_parts = trade['date'].split('-')
+                formatted_date = f"{date_parts[0]}-{date_parts[1]}-{date_parts[2]}"
+                trade['date_formatted'] = formatted_date
+            except Exception:
+                trade['date_formatted'] = trade['date']
+        elif 'date' in trade:
+            try:
+                date_obj = pd.to_datetime(trade['date'])
+                trade['date_formatted'] = date_obj.strftime('%Y-%m-%d')
+            except:
+                trade['date_formatted'] = str(trade['date'])
     
     # Get unique symbols and strategies for filters
     symbols = set(trade.get('symbol', '') for trade in trades if 'symbol' in trade)
     strategies = set(trade.get('strategy', '') for trade in trades if 'strategy' in trade)
+    brokers = set(trade.get('broker', '') for trade in trades if 'broker' in trade and trade.get('broker', ''))
+    
+    # Get filter parameters
+    symbol_filter = request.args.get('symbol', '')
+    strategy_filter = request.args.get('strategy', '')
+    broker_filter = request.args.get('broker', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    type_filter = request.args.get('type', '')
+    
+    # Apply filters
+    filtered_trades = trades.copy()
+    
+    if symbol_filter:
+        filtered_trades = [t for t in filtered_trades if t.get('symbol', '').upper() == symbol_filter.upper()]
+    
+    if strategy_filter:
+        filtered_trades = [t for t in filtered_trades if t.get('strategy', '').lower() == strategy_filter.lower()]
+    
+    if broker_filter:
+        filtered_trades = [t for t in filtered_trades if t.get('broker', '').lower() == broker_filter.lower()]
+    
+    if type_filter:
+        filtered_trades = [t for t in filtered_trades if t.get('trade_type', '').lower() == type_filter.lower()]
+    
+    if date_from:
+        try:
+            date_from_obj = pd.to_datetime(date_from)
+            filtered_trades = [t for t in filtered_trades if pd.to_datetime(t.get('date')) >= date_from_obj]
+        except:
+            pass
+    
+    if date_to:
+        try:
+            date_to_obj = pd.to_datetime(date_to)
+            filtered_trades = [t for t in filtered_trades if pd.to_datetime(t.get('date')) <= date_to_obj]
+        except:
+            pass
+    
+    # Get sorting parameters
+    sort_by = request.args.get('sort', 'date')
+    sort_dir = request.args.get('dir', 'desc')
+    
+    # Apply sorting
+    reverse_sort = sort_dir == 'desc'
+    
+    if sort_by == 'date':
+        filtered_trades.sort(key=lambda x: pd.to_datetime(x.get('date', '1970-01-01'), errors='coerce'), reverse=reverse_sort)
+    elif sort_by == 'symbol':
+        filtered_trades.sort(key=lambda x: x.get('symbol', '').upper(), reverse=reverse_sort)
+    elif sort_by == 'type':
+        filtered_trades.sort(key=lambda x: x.get('trade_type', '').lower(), reverse=reverse_sort)
+    elif sort_by == 'broker':
+        filtered_trades.sort(key=lambda x: x.get('broker', '').lower(), reverse=reverse_sort)
+    elif sort_by == 'strategy':
+        filtered_trades.sort(key=lambda x: x.get('strategy', '').lower(), reverse=reverse_sort)
+    elif sort_by == 'entry':
+        filtered_trades.sort(key=lambda x: float(x.get('entry_price', 0)) if x.get('entry_price', 0) and not isinstance(x.get('entry_price'), str) else 0, reverse=reverse_sort)
+    elif sort_by == 'exit':
+        filtered_trades.sort(key=lambda x: float(x.get('exit_price', 0)) if x.get('exit_price', 0) and not isinstance(x.get('exit_price'), str) else 0, reverse=reverse_sort)
+    elif sort_by == 'size':
+        filtered_trades.sort(key=lambda x: float(x.get('size', 0)) if x.get('size', 0) and not isinstance(x.get('size'), str) else 0, reverse=reverse_sort)
+    elif sort_by == 'pnl':
+        filtered_trades.sort(key=lambda x: float(x.get('pnl', 0)) if x.get('pnl', 0) and not isinstance(x.get('pnl'), str) else 0, reverse=reverse_sort)
+    
+    # Get column view settings
+    view = request.args.get('view', 'default')
+    
+    # Define column sets
+    column_views = {
+        'default': ['date', 'symbol', 'type', 'broker', 'strategy', 'entry', 'exit', 'size', 'pnl', 'actions'],
+        'minimal': ['date', 'symbol', 'type', 'pnl', 'actions'],
+        'detailed': ['date', 'symbol', 'type', 'broker', 'strategy', 'entry', 'exit', 'size', 'stop_loss', 'take_profit', 'pnl', 'actions'],
+        'analysis': ['date', 'symbol', 'type', 'strategy', 'risk_reward', 'pnl', 'actions']
+    }
+    
+    active_columns = column_views.get(view, column_views['default'])
+    
+    # Calculate additional fields for active columns
+    if 'risk_reward' in active_columns:
+        for trade in filtered_trades:
+            if all(k in trade for k in ['entry_price', 'stop_loss', 'take_profit']) and trade['stop_loss'] and trade['take_profit']:
+                try:
+                    entry = float(trade['entry_price'])
+                    sl = float(trade['stop_loss'])
+                    tp = float(trade['take_profit'])
+                    trade['risk_reward'] = calculate_rr_ratio(entry, sl, tp)
+                    if trade['risk_reward']:
+                        trade['risk_reward_formatted'] = f"1:{trade['risk_reward']:.2f}"
+                    else:
+                        trade['risk_reward_formatted'] = "N/A"
+                except (ValueError, TypeError, ZeroDivisionError):
+                    trade['risk_reward_formatted'] = "N/A"
+            else:
+                trade['risk_reward_formatted'] = "N/A"
     
     # Simple pagination
     page = request.args.get('page', 1, type=int)
-    per_page = 10
-    total_trades = len(trades)
+    per_page = int(request.args.get('per_page', 10))
+    total_trades = len(filtered_trades)
     total_pages = (total_trades + per_page - 1) // per_page  # Ceiling division
     
     # Slice trades for current page
     start_idx = (page - 1) * per_page
     end_idx = min(start_idx + per_page, total_trades)
-    page_trades = trades[start_idx:end_idx]
+    page_trades = filtered_trades[start_idx:end_idx]
+    
+    # Build pagination URL base
+    pagination_url = '/trades?'
+    for param in ['symbol', 'strategy', 'broker', 'type', 'date_from', 'date_to', 'sort', 'dir', 'view', 'per_page']:
+        value = request.args.get(param, '')
+        if value:
+            pagination_url += f"{param}={value}&"
     
     return render_template('trades.html', 
                           trades=page_trades,
                           symbols=sorted(symbols),
                           strategies=sorted(strategies),
+                          brokers=sorted(brokers),
+                          symbol_filter=symbol_filter,
+                          strategy_filter=strategy_filter,
+                          broker_filter=broker_filter,
+                          date_from=date_from,
+                          date_to=date_to,
+                          type_filter=type_filter,
+                          sort_by=sort_by,
+                          sort_dir=sort_dir,
+                          view=view,
+                          column_views=column_views,
+                          active_columns=active_columns,
                           page=page,
+                          per_page=per_page,
                           total_pages=max(1, total_pages),  # At least 1 page
                           total_trades=total_trades,
                           page_start=start_idx + 1 if total_trades > 0 else 0,
                           page_end=end_idx,
                           has_prev=page > 1,
                           has_next=page < total_pages,
-                          per_page=per_page,
+                          pagination_url=pagination_url,
                           google_client_id=app.config['GOOGLE_CLIENT_ID'])
 
 @app.route('/trade/<trade_id>')
@@ -1228,25 +1349,11 @@ def view_trade(trade_id):
 @app.route('/edit_trade/<trade_id>', methods=['GET', 'POST'])
 @login_required
 def edit_trade(trade_id):
-    # Get user trades
-    trades_df = get_user_trades(current_user.id)
+    # Get the trade from database
+    trade = Trade.query.filter_by(id=trade_id, user_id=current_user.id).first()
     
-    # Convert DataFrame to list of dicts
-    trades = []
-    if not trades_df.empty:
-        trades = trades_df.to_dict(orient='records')
-    
-    # Find the specific trade
-    trade_index = None
-    trade_data = None
-    for i, trade in enumerate(trades):
-        if str(trade.get('id')) == str(trade_id):
-            trade_index = i
-            trade_data = trade
-            break
-    
-    if trade_data is None:
-        flash('Trade not found')
+    if not trade:
+        flash('Trade not found', 'danger')
         return redirect(url_for('trades'))
     
     # Create form and populate with existing data
@@ -1254,58 +1361,38 @@ def edit_trade(trade_id):
     
     if request.method == 'GET':
         # Populate form with existing data
-        if 'date' in trade_data and trade_data['date']:
-            try:
-                form.date.data = datetime.strptime(trade_data['date'], '%Y-%m-%d')
-            except ValueError:
-                form.date.data = datetime.now()
-        
-        form.symbol.data = trade_data.get('symbol', '')
-        form.trade_type.data = trade_data.get('trade_type', 'long')
-        form.broker.data = trade_data.get('broker', '')
-        form.entry_price.data = float(trade_data.get('entry_price', 0))
-        form.exit_price.data = float(trade_data.get('exit_price', 0))
-        form.size.data = float(trade_data.get('size', 0))
-        
-        if 'stop_loss' in trade_data and trade_data['stop_loss'] is not None:
-            form.stop_loss.data = float(trade_data['stop_loss'])
-            
-        if 'take_profit' in trade_data and trade_data['take_profit'] is not None:
-            form.take_profit.data = float(trade_data['take_profit'])
-            
-        form.strategy.data = trade_data.get('strategy', '')
-        form.notes.data = trade_data.get('notes', '')
+        form.date.data = trade.date
+        form.symbol.data = trade.symbol
+        form.trade_type.data = trade.trade_type
+        form.broker.data = trade.broker
+        form.entry_price.data = trade.entry_price
+        form.exit_price.data = trade.exit_price
+        form.size.data = trade.size
+        form.stop_loss.data = trade.stop_loss
+        form.take_profit.data = trade.take_profit
+        form.strategy.data = trade.strategy
+        form.notes.data = trade.notes
     
     if form.validate_on_submit():
-        # Update trade data
-        updated_trade = {
-            'id': trade_id,  # Preserve original ID
-            'date': form.date.data.strftime('%Y-%m-%d'),
-            'symbol': form.symbol.data.upper(),
-            'trade_type': form.trade_type.data,
-            'broker': form.broker.data,
-            'entry_price': form.entry_price.data,
-            'exit_price': form.exit_price.data,
-            'size': form.size.data,
-            'stop_loss': form.stop_loss.data,
-            'take_profit': form.take_profit.data,
-            'strategy': form.strategy.data,
-            'notes': form.notes.data,
-            'user_id': current_user.id
-        }
+        # Update trade
+        trade.date = form.date.data
+        trade.symbol = form.symbol.data.upper()
+        trade.trade_type = form.trade_type.data
+        trade.broker = form.broker.data
+        trade.entry_price = form.entry_price.data
+        trade.exit_price = form.exit_price.data
+        trade.size = form.size.data
+        trade.stop_loss = form.stop_loss.data
+        trade.take_profit = form.take_profit.data
+        trade.strategy = form.strategy.data
+        trade.notes = form.notes.data
         
-        # Preserve original screenshot if it exists
-        if 'screenshot' in trade_data and trade_data['screenshot']:
-            updated_trade['screenshot'] = trade_data['screenshot']
-        else:
-            updated_trade['screenshot'] = None
-            
         # Handle new screenshot upload if provided
         if form.screenshot.data:
             # Delete old screenshot if it exists
-            if 'screenshot' in trade_data and trade_data['screenshot']:
+            if trade.screenshot_path:
                 try:
-                    old_screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade_data['screenshot'])
+                    old_screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade.screenshot_path)
                     if os.path.exists(old_screenshot_path):
                         os.remove(old_screenshot_path)
                 except Exception as e:
@@ -1315,50 +1402,10 @@ def edit_trade(trade_id):
             filename = secure_filename(f"{current_user.id}_{trade_id}_{form.screenshot.data.filename}")
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             form.screenshot.data.save(file_path)
-            updated_trade['screenshot'] = filename
+            trade.screenshot_path = filename
         
-        # Calculate P&L
-        updated_trade['pnl'] = calculate_pnl(
-            updated_trade['entry_price'], 
-            updated_trade['exit_price'], 
-            updated_trade['size'], 
-            updated_trade['trade_type']
-        )
-        
-        # Calculate risk/reward ratio if stop loss is provided
-        if form.stop_loss.data:
-            updated_trade['risk_reward'] = calculate_risk_reward(
-                updated_trade['entry_price'],
-                updated_trade['exit_price'],
-                updated_trade['stop_loss']
-            )
-        
-        # Update trade in memory database
-        if current_user.id in trades_db:
-            for i, trade in enumerate(trades_db[current_user.id]):
-                if trade['id'] == trade_id:
-                    trades_db[current_user.id][i] = updated_trade
-                    break
-        
-        # Update CSV file
-        try:
-            csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
-            if os.path.exists(csv_path):
-                trades_df = pd.read_csv(csv_path)
-                
-                # Find the trade to update
-                mask = trades_df['id'] == trade_id
-                if mask.any():
-                    # Update all fields from updated_trade
-                    for key, value in updated_trade.items():
-                        trades_df.loc[mask, key] = value
-                    
-                    # Save updated dataframe
-                    trades_df.to_csv(csv_path, index=False)
-        except Exception as e:
-            print(f"Error updating trade in CSV: {e}")
-            # Continue as we still have it saved in memory
-        
+        # Save changes to database
+        db.session.commit()
         flash('Trade updated successfully!')
         return redirect(url_for('trades'))
     
@@ -1371,72 +1418,31 @@ def delete_trade(trade_id):
     print(f"Attempting to delete trade with ID: {trade_id}")
     print(f"Current user ID: {current_user.id}")
     
-    # Check in-memory trades
-    if current_user.id in trades_db:
-        in_memory_trades = trades_db[current_user.id]
-        print(f"Found {len(in_memory_trades)} trades for current user")
-        
-        # Print trade IDs for debugging
-        for i, trade in enumerate(in_memory_trades):
-            print(f"Trade {i}: ID={trade.get('id')}, Type={type(trade.get('id'))}")
-            print(f"Trade {i} data: {trade}")
-        
-        for i, trade in enumerate(in_memory_trades):
-            # Ensure both IDs are strings for comparison
-            stored_id = str(trade.get('id', ''))
-            delete_id = str(trade_id)
-            print(f"Comparing stored ID: {stored_id} ({type(stored_id)}) with delete ID: {delete_id} ({type(delete_id)})")
-            
-            if stored_id == delete_id:
-                print(f"Match found for trade at index {i}")
-                # Delete any associated screenshot
-                if trade.get('screenshot'):
-                    try:
-                        screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade['screenshot'])
-                        if os.path.exists(screenshot_path):
-                            os.remove(screenshot_path)
-                            print(f"Deleted screenshot: {screenshot_path}")
-                        else:
-                            print(f"Screenshot not found at: {screenshot_path}")
-                    except Exception as e:
-                        print(f"Error deleting screenshot: {e}")
-                
-                # Remove the trade
-                removed_trade = in_memory_trades.pop(i)
-                print(f"Removed trade: {removed_trade}")
-                
-                # Update CSV file if it exists
-                csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
-                if os.path.exists(csv_path):
-                    try:
-                        trades_df = pd.read_csv(csv_path)
-                        print(f"CSV file found, shape before: {trades_df.shape}")
-                        # Check if ID column exists
-                        if 'id' in trades_df.columns:
-                            # Convert both IDs to strings to ensure proper comparison
-                            trades_df['id'] = trades_df['id'].astype(str)
-                            
-                            # Print all IDs in the CSV for debugging
-                            print(f"All IDs in CSV: {trades_df['id'].tolist()}")
-                            
-                            # Remove the trade with matching ID (use exact string comparison)
-                            trades_df = trades_df[trades_df['id'] != str(trade_id)]
-                            print(f"CSV file shape after: {trades_df.shape}")
-                            trades_df.to_csv(csv_path, index=False)
-                            print(f"CSV file updated at: {csv_path}")
-                        else:
-                            print("No 'id' column found in CSV")
-                    except Exception as e:
-                        print(f"Error updating CSV after delete: {e}")
+    # Find the trade in the database
+    trade = Trade.query.filter_by(id=trade_id, user_id=current_user.id).first()
+    
+    if trade:
+        # Delete any associated screenshot
+        if trade.screenshot_path:
+            try:
+                screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], trade.screenshot_path)
+                if os.path.exists(screenshot_path):
+                    os.remove(screenshot_path)
+                    print(f"Deleted screenshot: {screenshot_path}")
                 else:
-                    print(f"CSV file not found at: {csv_path}")
-                
-                flash('Trade deleted successfully')
-                break
-        else:
-            print(f"No trade found with ID: {trade_id}")
+                    print(f"Screenshot not found at: {screenshot_path}")
+            except Exception as e:
+                print(f"Error deleting screenshot: {e}")
+        
+        # Delete the trade from database
+        db.session.delete(trade)
+        db.session.commit()
+        print(f"Deleted trade with ID: {trade_id}")
+        
+        flash('Trade deleted successfully')
     else:
-        print(f"No trades found for user ID: {current_user.id}")
+        print(f"No trade found with ID: {trade_id} for user ID: {current_user.id}")
+        flash('Trade not found', 'danger')
     
     return redirect(url_for('trades'))
 
@@ -1450,15 +1456,12 @@ def settings():
         action = request.form.get('action')
         
         if action == 'delete_account':
-            # Delete all user data
-            user_id = user.id
-            if user_id in trades_db:
-                del trades_db[user_id]
-            if user_id in users:
-                del users[user_id]
-                
-            # Delete user from users.csv
-            save_users()
+            # Delete all user trades
+            Trade.query.filter_by(user_id=user.id).delete()
+            
+            # Delete the user
+            db.session.delete(user)
+            db.session.commit()
             
             # Log out user
             logout_user()
@@ -1470,21 +1473,12 @@ def settings():
         new_password = request.form.get('new_password')
         
         if current_password and new_password:
-            # Try Werkzeug format first (for migrated passwords)
             if check_password_hash(user.password_hash, current_password):
                 user.password_hash = generate_password_hash(new_password)
-                save_users()
-                flash('Your password has been updated successfully!', 'success')
-            # Try bcrypt format as fallback
-            elif bcrypt.checkpw(current_password.encode('utf-8'), user.password_hash.encode('utf-8')):
-                user.password_hash = generate_password_hash(new_password)
-                save_users()
+                db.session.commit()
                 flash('Your password has been updated successfully!', 'success')
             else:
                 flash('Current password is incorrect.', 'danger')
-        
-        # Process app preferences (dark mode toggle could go here)
-        # This would typically involve saving user preferences to the user object
         
         # Stay on settings page
         return redirect(url_for('settings'))
@@ -1505,17 +1499,19 @@ def upgrade_premium():
 @login_required
 def export_trades():
     user_id = current_user.id
-    if user_id not in trades_db:
+    
+    # Get user's trades from database
+    trades = Trade.query.filter_by(user_id=user_id).all()
+    
+    if not trades:
         flash('No trades found to export.', 'warning')
         return redirect(url_for('settings'))
+    
+    # Convert trades to dictionaries
+    trades_list = [trade.to_dict() for trade in trades]
     
     # Create CSV in memory
-    trades_df = pd.DataFrame(trades_db[user_id])
-    
-    # If no trades, return early
-    if trades_df.empty:
-        flash('No trades found to export.', 'warning')
-        return redirect(url_for('settings'))
+    trades_df = pd.DataFrame(trades_list)
     
     # Export to CSV
     csv_data = StringIO()
@@ -1569,15 +1565,24 @@ def import_trades():
             # Convert to list of dicts
             trades_list = trades_df.to_dict('records')
             
-            # Initialize trades_db[user_id] if not exists
-            if user_id not in trades_db:
-                trades_db[user_id] = []
-            
-            # Add trades to in-memory DB
-            trades_db[user_id].extend(trades_list)
-            
-            # Save to CSV
-            save_trades_to_csv()
+            # Add trades to database
+            for trade in trades_list:
+                new_trade = Trade(
+                    user_id=user_id,
+                    date=trade['date'],
+                    symbol=trade['symbol'],
+                    trade_type=trade['trade_type'],
+                    broker=trade['broker'],
+                    entry_price=trade['entry_price'],
+                    exit_price=trade['exit_price'],
+                    size=trade['size'],
+                    stop_loss=trade['stop_loss'],
+                    take_profit=trade['take_profit'],
+                    strategy=trade['strategy'],
+                    notes=trade['notes']
+                )
+                db.session.add(new_trade)
+            db.session.commit()
             
             flash(f'Successfully imported {len(trades_list)} trades!', 'success')
         except Exception as e:
@@ -1592,52 +1597,28 @@ def import_trades():
 def delete_all_trades():
     user_id = current_user.id
     
-    # Clear trades for this user
-    if user_id in trades_db:
-        trades_db[user_id] = []
-        
-    # Save empty trade list to CSV
-    save_trades_to_csv()
+    # Delete all trades for this user from the database
+    deleted_count = Trade.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
     
-    flash('All trades have been deleted.', 'success')
+    flash(f'All trades ({deleted_count}) have been deleted.', 'success')
     return redirect(url_for('settings'))
 
 # Fungsi untuk menyimpan pengguna ke CSV
 def save_users():
-    users_data = []
-    for user_id, user in users.items():
-        users_data.append({
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'password_hash': user.password_hash,
-            'is_verified': user.is_verified,
-            'google_id': getattr(user, 'google_id', None)
-        })
-    
-    users_df = pd.DataFrame(users_data)
-    users_df.to_csv('users.csv', index=False)
-    
+    """
+    Legacy function kept for backward compatibility.
+    User data is now stored in the database.
+    """
+    pass
+
 # Fungsi untuk menyimpan perdagangan ke CSV
 def save_trades_to_csv():
-    all_trades = []
-    for user_id, user_trades in trades_db.items():
-        for trade in user_trades:
-            # Ensure user_id is attached to each trade
-            trade_copy = trade.copy()
-            trade_copy['user_id'] = user_id
-            all_trades.append(trade_copy)
-    
-    if all_trades:
-        trades_df = pd.DataFrame(all_trades)
-        # Ensure the file is saved to the data folder
-        os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
-        trades_df.to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
-    else:
-        # Create empty CSV with headers that include broker
-        pd.DataFrame(columns=['id', 'user_id', 'date', 'symbol', 'trade_type', 'broker',
-                             'entry_price', 'exit_price', 'size', 'stop_loss', 'take_profit',
-                             'pnl', 'strategy', 'notes', 'screenshot']).to_csv(f"{app.config['DATA_FOLDER']}/trades.csv", index=False)
+    """
+    Legacy function kept for backward compatibility.
+    Trade data is now stored in the database.
+    """
+    pass
 
 # New route for Google Sign-In token handling
 @app.route('/login/google/token', methods=['POST'])
@@ -1685,48 +1666,35 @@ def login_google_token():
             print("Email not verified with Google")
             return jsonify({'error': 'Email not verified with Google. Please verify your email first.'}), 401
         
-        # Check if user exists
-        user_found = None
-        for user_id, user in users.items():
-            if user.email == email:
-                user_found = user
-                print(f"Found existing user with email {email}, id={user_id}")
-                break
+        # Check if user exists in database
+        existing_user = User.query.filter_by(email=email).first()
+        
+        if existing_user:
+            # Update Google ID if not already set
+            if not existing_user.google_id:
+                existing_user.google_id = google_id
+                db.session.commit()
                 
-        if not user_found:
-            print(f"Creating new user for {email}")
-            # Generate a random secure password for the user
-            import uuid
-            import secrets
-            random_password = secrets.token_urlsafe(16)
-            hashed_password = generate_password_hash(random_password)
-            
-            # Create the user
-            user_id = str(uuid.uuid4())
+            # Log in the user
+            login_user(existing_user)
+            print(f"User {email} successfully logged in via Google token")
+        else:
+            # Create a new user
             new_user = User(
-                id=user_id,
-                username=name,  # Use the name as username
+                username=name,
                 email=email,
-                password_hash=hashed_password,
+                password_hash=generate_password_hash(secrets.token_urlsafe(16)),
                 is_verified=True,  # User is verified via Google
                 google_id=google_id
             )
-            users[user_id] = new_user
-            # Initialize empty trades list for the new user
-            trades_db[user_id] = []
-            user_found = new_user
-            print(f"Created new user with ID {user_id}")
-        
-        # Log in the user
-        login_user(user_found)
-        print(f"User {email} successfully logged in via Google token")
-        
-        # Save users to have a persistent record
-        try:
-            save_users()
-            print("User data saved")
-        except Exception as e:
-            print(f"Warning: Could not save user data: {e}")
+            
+            # Add to database
+            db.session.add(new_user)
+            db.session.commit()
+            
+            # Log in the user
+            login_user(new_user)
+            print(f"User logged in successfully: {new_user.username}")
         
         return jsonify({'success': True, 'redirect': url_for('dashboard')}), 200
     
@@ -1794,13 +1762,8 @@ def register_google_token():
         
         # Check if user with this email already exists
         print(f"Checking if user with email {email} already exists")
-        existing_user = None
-        for user_id, user in users.items():
-            if user.email == email:
-                existing_user = user
-                print(f"User with email {email} already exists - User ID: {user_id}")
-                break
-                
+        existing_user = User.query.filter_by(email=email).first()
+        
         if existing_user:
             print(f"Logging in existing user: {existing_user.username}")
             login_user(existing_user)
@@ -1808,19 +1771,13 @@ def register_google_token():
         
         # Check if username is already taken
         print(f"Checking if username {username} is already taken")
-        username_taken = False
-        for user in users.values():
-            if user.username == username:
-                username_taken = True
-                print(f"Username {username} is already taken")
-                break
-                
+        username_taken = User.query.filter_by(username=username).first()
+        
         if username_taken:
             return jsonify({'error': 'Username already taken'}), 400
         
         # Create new user with Google info
-        user_id = str(uuid.uuid4())
-        print(f"Creating new user with ID: {user_id}")
+        print(f"Creating new user with username: {username}, email: {email}")
         
         # Generate a random secure password
         random_password = secrets.token_urlsafe(16)
@@ -1832,26 +1789,18 @@ def register_google_token():
         # Create the user
         try:
             new_user = User(
-                id=user_id,
                 username=username,
                 email=email,
                 password_hash=hashed_password,
                 is_verified=True,  # User is verified via Google
                 google_id=google_id
             )
-            print(f"User object created successfully - ID: {user_id}, Username: {username}")
+            print(f"User object created successfully - Username: {username}")
             
-            # Store the user
-            users[user_id] = new_user
-            print(f"User added to users dictionary - Total users: {len(users)}")
-            
-            # Initialize empty trades list
-            trades_db[user_id] = []
-            print(f"Empty trades list initialized for user: {user_id}")
-            
-            # Save users data
-            save_users()
-            print("User data saved to CSV")
+            # Store the user in database
+            db.session.add(new_user)
+            db.session.commit()
+            print(f"User added to database")
             
             # Log in the user
             login_user(new_user)
@@ -1887,20 +1836,17 @@ def debug_trades():
     output = []
     output.append(f"Current user ID: {current_user.id}")
     
-    # Check in-memory trades
-    if current_user.id in trades_db:
-        in_memory_trades = trades_db[current_user.id]
-        output.append(f"Found {len(in_memory_trades)} trades for current user in memory")
-        
-        for i, trade in enumerate(in_memory_trades):
-            output.append(f"Memory Trade {i}:")
-            output.append(f"  ID: {trade.get('id')} (Type: {type(trade.get('id'))})")
-            output.append(f"  Symbol: {trade.get('symbol')}")
-            output.append(f"  Date: {trade.get('date')}")
-    else:
-        output.append("No trades found in memory for current user")
+    # Get trades from database
+    db_trades = Trade.query.filter_by(user_id=current_user.id).all()
+    output.append(f"Found {len(db_trades)} trades for current user in database")
     
-    # Check CSV file
+    for i, trade in enumerate(db_trades):
+        output.append(f"Database Trade {i}:")
+        output.append(f"  ID: {trade.id} (Type: {type(trade.id)})")
+        output.append(f"  Symbol: {trade.symbol}")
+        output.append(f"  Date: {trade.date}")
+    
+    # Check CSV file (legacy support)
     csv_path = f"{app.config['DATA_FOLDER']}/trades.csv"
     if os.path.exists(csv_path):
         try:
@@ -1926,5 +1872,7 @@ def debug_trades():
     return '<pre>' + '\n'.join(output) + '</pre>'
 
 # Run the app
-if __name__ == '__main__':
-    app.run(debug=True) 
+if __name__ == "__main__":
+    # IMPORTANT: This is a development server running on HTTP only
+    # For production, use a proper WSGI server with HTTPS
+    app.run(host="0.0.0.0", port=5000, debug=True) 

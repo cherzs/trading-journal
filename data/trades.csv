@@ -20,3 +20,4 @@ id,user_id,date,symbol,trade_type,broker,strategy,entry_price,exit_price,size,st
 119demo,demo,2024-04-25,SOLUSDT,long,Binance,Support Zone,145.25,156.5,25.0,140.0,160.0,283.13,Strong accumulation at key support zone. Volume analysis showed whales buying.,sol_support.png,
 120demo,demo,2024-04-26,ES1!,short,IBKR,Rising Wedge,5125.5,5080.25,0.5,5150.0,5050.0,226.25,Futures broke down from rising wedge pattern. Added to position on retest of breakdown level.,es_wedge.png ,
 3c5456dc-c002-458d-b1d2-d469e01d2683,demo,2025-04-24,BTC/USDT,long,3,5,3.0,5.0,5.0,5.0,5.0,10.0,Damn it,demo_3c5456dc-c002-458d-b1d2-d469e01d2683_2-Photoroom.png,1.0
+80fc05d6-5c97-46a3-bec6-b39e8632fe4a,3ebd7983-1e7f-42d2-8fa7-58760b33ce93,2025-04-16,BTC/USDT,long,Binance,Breakout,900.0,900.0,900.0,900.0,900.0,0.0,,,

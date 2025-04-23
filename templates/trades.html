@@ -28,6 +28,110 @@
         .smaller-logo {
             transform: scale(0.85);
         }
+        
+        /* Container adjustments */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 100% !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+        }
+        
+        /* Custom Table Styling */
+        #table-view {
+            width: 100%;
+        }
+        
+        #table-view .overflow-x-auto {
+            width: 100%;
+            padding-right: 0;
+        }
+        
+        #table-view table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        #table-view thead th {
+            background-color: rgba(88, 28, 135, 0.8);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+        }
+        
+        #table-view tbody tr:nth-child(odd) {
+            background-color: rgba(31, 41, 55, 0.5);
+        }
+        
+        #table-view tbody tr:nth-child(even) {
+            background-color: rgba(31, 41, 55, 0.8);
+        }
+        
+        #table-view tbody tr:hover {
+            background-color: rgba(55, 65, 81, 0.9);
+        }
+        
+        #table-view td {
+            padding: 0.75rem 0.6rem;
+        }
+        
+        #table-view th {
+            padding: 0.75rem 0.6rem;
+        }
+        
+        #table-view .text-right {
+            text-align: right;
+        }
+        
+        #table-view .actions-column {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        #table-view th:last-child, 
+        #table-view td:last-child {
+            padding-right: 0.3rem;
+            width: 100px;
+        }
+        
+        #table-view .card {
+            padding-right: 0;
+            margin-right: 0;
+        }
+        
+        /* Fix for extra spacing */
+        .card {
+            padding: 0 !important;
+            overflow: hidden;
+            margin-right: 0 !important;
+        }
+        
+        /* Ensure the container fills the width */
+        .container {
+            padding-right: 0 !important;
+        }
+        
+        .actions-column {
+            width: 95px;
+            min-width: 95px;
+            max-width: 95px;
+        }
+        
+        /* Remove right column padding */
+        @media screen and (min-width: 768px) {
+            .md\:ml-64 {
+                margin-left: 16rem;
+                padding-right: 0 !important;
+            }
+        }
     </style>
 </head>
 <body class="gradient-bg text-gray-100">
@@ -95,68 +199,399 @@
                     <h1 class="text-3xl font-bold mb-4 md:mb-0">Your Trades</h1>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <!-- Search and Filters -->
-                        <div class="flex">
-                            <select id="symbol-filter" class="mr-2 rounded-l-md rounded-r-none border-r-0 text-white bg-gray-800 border border-gray-700">
-                                <option value="">All Symbols</option>
-                                {% for symbol in symbols %}
-                                <option value="{{ symbol }}">{{ symbol }}</option>
-                                {% endfor %}
-                            </select>
-                            <select id="strategy-filter" class="rounded-r-md rounded-l-none text-white bg-gray-800 border border-gray-700">
-                                <option value="">All Strategies</option>
-                                {% for strategy in strategies %}
-                                <option value="{{ strategy }}">{{ strategy }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
                         <a href="/add_trade" class="btn-primary flex items-center justify-center">
                             <i class="fas fa-plus mr-2"></i> Add New Trade
                         </a>
                     </div>
                 </div>
                 
+                <!-- Advanced Filters and Controls -->
+                <div class="card mb-6">
+                    <div class="flex flex-col">
+                        <div class="flex justify-between items-center border-b border-gray-700 px-6 py-3">
+                            <h3 class="text-sm font-medium">Advanced Filters</h3>
+                            <div class="flex items-center">
+                                <h3 class="text-sm font-medium mr-4">View Options</h3>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Controls Row -->
+                        <div class="flex flex-col lg:flex-row lg:justify-between mb-4 gap-3">
+                            <!-- Filter Button -->
+                            <div class="order-2 lg:order-1 flex flex-wrap gap-2 items-center">
+                                <button id="filterToggleBtn" type="button" class="px-3 py-2 bg-gray-800 text-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-150 shadow-sm flex items-center space-x-1">
+                                    <i class="fas fa-filter"></i>
+                                    <span>Filters</span>
+                                    <i class="fas fa-chevron-down text-xs ml-1"></i>
+                                </button>
+                                
+                                <!-- View Toggle Button -->
+                                <div class="flex items-center bg-gray-800 rounded-md shadow-sm">
+                                    <button id="table-view-btn" type="button" class="px-3 py-2 text-gray-300 rounded-l-md transition-colors duration-150 flex items-center space-x-1 bg-indigo-600">
+                                        <i class="fas fa-table"></i>
+                                        <span class="hidden sm:inline">Table</span>
+                                    </button>
+                                    <button id="list-view-btn" type="button" class="px-3 py-2 text-gray-300 rounded-r-md hover:bg-gray-700 transition-colors duration-150 flex items-center space-x-1">
+                                        <i class="fas fa-list"></i>
+                                        <span class="hidden sm:inline">List</span>
+                                    </button>
+                                </div>
+                                
+                                {% if has_active_filters %}
+                                <button id="reset-filters" class="px-4 py-2 text-sm border border-gray-700 rounded-md hover:bg-gray-700 transition flex items-center">
+                                    <i class="fas fa-times mr-2"></i> Reset Filters
+                                </button>
+                                <button id="apply-filters" class="px-4 py-2 text-sm bg-purple-700 border border-purple-700 rounded-md hover:bg-purple-600 transition flex items-center">
+                                    <i class="fas fa-filter mr-2"></i> Apply Filters
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Left column - Filters -->
+                            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="symbol-filter" class="text-xs text-gray-400 mb-1 block">Symbol</label>
+                                    <select id="symbol-filter" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                        <option value="">All Symbols</option>
+                                        {% for symbol in symbols %}
+                                        <option value="{{ symbol }}" {% if symbol_filter == symbol %}selected{% endif %}>{{ symbol }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="strategy-filter" class="text-xs text-gray-400 mb-1 block">Strategy</label>
+                                    <select id="strategy-filter" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                        <option value="">All Strategies</option>
+                                        {% for strategy in strategies %}
+                                        <option value="{{ strategy }}" {% if strategy_filter == strategy %}selected{% endif %}>{{ strategy }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="broker-filter" class="text-xs text-gray-400 mb-1 block">Broker</label>
+                                    <select id="broker-filter" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                        <option value="">All Brokers</option>
+                                        {% for broker in brokers %}
+                                        <option value="{{ broker }}" {% if broker_filter == broker %}selected{% endif %}>{{ broker }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="type-filter" class="text-xs text-gray-400 mb-1 block">Type</label>
+                                    <select id="type-filter" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                        <option value="">All Types</option>
+                                        <option value="long" {% if type_filter == 'long' %}selected{% endif %}>Long</option>
+                                        <option value="short" {% if type_filter == 'short' %}selected{% endif %}>Short</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="text-xs text-gray-400 mb-1 block">Date Range</label>
+                                    <div class="flex space-x-2">
+                                        <input type="date" id="date-from" value="{{ date_from }}" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm" placeholder="From">
+                                        <input type="date" id="date-to" value="{{ date_to }}" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm" placeholder="To">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right column - View Options -->
+                            <div>
+                                <div class="space-y-4">
+                                    
+                                    <div>
+                                        <label for="column-select" class="text-xs text-gray-400 mb-1 block">Column View</label>
+                                        <select id="view-select" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                            <option value="default" {% if view == 'default' %}selected{% endif %}>Default View</option>
+                                            <option value="minimal" {% if view == 'minimal' %}selected{% endif %}>Minimal View</option>
+                                            <option value="detailed" {% if view == 'detailed' %}selected{% endif %}>Detailed View</option>
+                                            <option value="analysis" {% if view == 'analysis' %}selected{% endif %}>Analysis View</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="per-page" class="text-xs text-gray-400 mb-1 block">Trades per page</label>
+                                        <select id="per-page" class="w-full rounded-md text-white bg-gray-800 border border-gray-700 py-2 px-3 text-sm">
+                                            <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                                            <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                                            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                                            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action buttons -->
+                        <div class="border-t border-gray-700 px-6 py-3 flex justify-end space-x-3">
+                            <button id="reset-filters" class="px-4 py-2 text-sm border border-gray-700 rounded-md hover:bg-gray-700 transition flex items-center">
+                                <i class="fas fa-times mr-2"></i> Reset Filters
+                            </button>
+                            <button id="apply-filters" class="px-4 py-2 text-sm bg-purple-700 border border-purple-700 rounded-md hover:bg-purple-600 transition flex items-center">
+                                <i class="fas fa-filter mr-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- View Toggle Buttons -->
+                <div class="mt-6 px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-end mb-4">
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button id="table-view-btn" type="button" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Table
+                            </button>
+                            <button id="list-view-btn" type="button" class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium bg-gray-700 text-white hover:bg-gray-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                </svg>
+                                List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Trades Table -->
-                <div class="card overflow-hidden">
-                    <div class="overflow-x-auto" style="width: 100%;">
-                        <table class="w-full table-auto">
-                            <thead class="bg-gray-800">
-                                <tr>
-                                    <th class="w-24 px-3 py-3 text-left">Date</th>
-                                    <th class="w-20 px-3 py-3 text-left">Symbol</th>
-                                    <th class="w-16 px-3 py-3 text-left">Type</th>
-                                    <th class="w-20 px-3 py-3 text-left">Broker</th>
-                                    <th class="w-28 px-3 py-3 text-left">Strategy</th>
-                                    <th class="w-20 px-3 py-3 text-left">Entry</th>
-                                    <th class="w-20 px-3 py-3 text-left">Exit</th>
-                                    <th class="w-16 px-3 py-3 text-left">Size</th>
-                                    <th class="w-20 px-3 py-3 text-left">P/L</th>
-                                    <th class="w-24 px-3 py-3 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for trade in trades %}
-                                <tr class="border-t border-gray-700 hover:bg-gray-800">
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.date }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.symbol }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap">
-                                        {% if trade.trade_type == 'long' %}
-                                        <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-full text-xs">Long</span>
-                                        {% else %}
-                                        <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-full text-xs">Short</span>
+                <div class="card overflow-hidden p-0">
+                    <!-- Table View -->
+                    <div id="table-view" class="w-full p-0">
+                        <div class="overflow-x-auto w-full">
+                            <table class="min-w-full table-auto bg-gray-900 bg-opacity-60">
+                                <thead class="bg-purple-900 bg-opacity-70 border-b border-gray-700">
+                                    <tr>
+                                        {% if 'date' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center cursor-pointer sort-header" data-sort="date">
+                                                <span>Date</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'date' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
                                         {% endif %}
+                                        
+                                        {% if 'symbol' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center cursor-pointer sort-header" data-sort="symbol">
+                                                <span>Symbol</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'symbol' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'type' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium w-24">
+                                            <div class="flex items-center cursor-pointer sort-header" data-sort="type">
+                                                <span>Type</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'type' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'broker' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium w-28">
+                                            <div class="flex items-center cursor-pointer sort-header" data-sort="broker">
+                                                <span>Broker</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'broker' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'strategy' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center cursor-pointer sort-header" data-sort="strategy">
+                                                <span>Strategy</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'strategy' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'entry' in active_columns %}
+                                        <th class="px-5 py-3 text-right text-gray-300 font-medium">
+                                            <div class="flex items-center justify-end cursor-pointer sort-header" data-sort="entry">
+                                                <span>Entry</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'entry' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'exit' in active_columns %}
+                                        <th class="px-5 py-3 text-right text-gray-300 font-medium">
+                                            <div class="flex items-center justify-end cursor-pointer sort-header" data-sort="exit">
+                                                <span>Exit</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'exit' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'size' in active_columns %}
+                                        <th class="px-5 py-3 text-right text-gray-300 font-medium">
+                                            <div class="flex items-center justify-end cursor-pointer sort-header" data-sort="size">
+                                                <span>Size</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'size' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'stop_loss' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center">
+                                                <span>Stop Loss</span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'take_profit' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center">
+                                                <span>Take Profit</span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'risk_reward' in active_columns %}
+                                        <th class="px-5 py-3 text-left text-gray-300 font-medium">
+                                            <div class="flex items-center">
+                                                <span>R:R</span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'pnl' in active_columns %}
+                                        <th class="px-5 py-3 text-right text-gray-300 font-medium">
+                                            <div class="flex items-center justify-end cursor-pointer sort-header" data-sort="pnl">
+                                                <span>P/L</span>
+                                                <span class="ml-1 text-xs">
+                                                    {% if sort_by == 'pnl' %}
+                                                        <i class="fas fa-sort-{{ 'down' if sort_dir == 'desc' else 'up' }}" style="color: rgb(139, 92, 246);"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-sort text-gray-500"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </th>
+                                        {% endif %}
+                                        
+                                        {% if 'actions' in active_columns %}
+                                        <th class="px-5 py-3 text-center text-gray-300 font-medium w-28">Actions</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in trades %}
+                                    <tr class="border-t border-gray-700 hover:bg-gray-800 transition-colors duration-150">
+                                        {% if 'date' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300">{{ trade.date_formatted if 'date_formatted' in trade else trade.date }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'symbol' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 font-medium">{{ trade.symbol }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'type' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap">
+                                        {% if trade.trade_type == 'long' %}
+                                            <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-md text-xs font-medium">Long</span>
+                                        {% else %}
+                                            <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-md text-xs font-medium">Short</span>
+                                            {% endif %}
+                                        </td>
+                                        {% endif %}
+                                        
+                                        {% if 'broker' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300">{{ trade.broker }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'strategy' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap truncate max-w-xs text-gray-300">{{ trade.strategy }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'entry' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-right">{{ trade.entry_price_formatted }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'exit' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-right">{{ trade.exit_price_formatted }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'size' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-right">{{ trade.size }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'stop_loss' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-right">{{ "$%.2f"|format(trade.stop_loss) if trade.stop_loss is not none else "-" }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'take_profit' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-right">{{ "$%.2f"|format(trade.take_profit) if trade.take_profit is not none else "-" }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'risk_reward' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap text-gray-300 text-center">{{ trade.risk_reward_formatted }}</td>
+                                        {% endif %}
+                                        
+                                        {% if 'pnl' in active_columns %}
+                                        <td class="px-5 py-4 whitespace-nowrap font-medium text-right {% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-300{% endif %}">
+                                        {{ trade.pnl_formatted if 'pnl_formatted' in trade else trade.pnl }}
                                     </td>
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.broker }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap truncate max-w-xs">{{ trade.strategy }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.entry_price_formatted }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.exit_price_formatted }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.size }}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap {% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
-                                        {{ trade.pnl_formatted }}
-                                    </td>
-                                    <td class="px-3 py-3 whitespace-nowrap">
-                                        <div class="flex space-x-3">
+                                        {% endif %}
+                                        
+                                        {% if 'actions' in active_columns %}
+                                        <td class="px-3 py-4 whitespace-nowrap text-center">
+                                        <div class="flex justify-center space-x-2 actions-column">
                                             <a href="/trade/{{ trade.id }}" class="text-indigo-400 hover:text-indigo-300" title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -164,53 +599,157 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form method="POST" action="/delete_trade/{{ trade.id }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this trade?')">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                                 <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
-                                </tr>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if total_pages > 1 %}
+                        <div class="px-6 py-4 flex justify-between items-center border-t border-gray-700">
+                            <div class="text-sm text-gray-400">
+                                Showing {{ (page - 1) * per_page + 1 }} to {{ min((page * per_page), total_trades) }} of {{ total_trades }} trades
+                            </div>
+                            <div class="flex space-x-2">
+                                {% if page > 1 %}
+                                <a href="{{ pagination_url }}page={{ page - 1 }}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md text-sm transition-colors flex items-center">
+                                    <i class="fas fa-chevron-left mr-1"></i> Prev
+                                </a>
+                                {% else %}
+                                <span class="px-3 py-2 bg-gray-900 text-gray-500 rounded-md text-sm cursor-not-allowed">
+                                    <i class="fas fa-chevron-left mr-1"></i> Prev
+                                </span>
+                                {% endif %}
+                                
+                                <div class="px-3 py-2 bg-gray-800 text-gray-300 rounded-md text-sm">
+                                    {{ page }} of {{ total_pages }}
+                                </div>
+                                
+                                {% if page < total_pages %}
+                                <a href="{{ pagination_url }}page={{ page + 1 }}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md text-sm transition-colors flex items-center">
+                                    Next <i class="fas fa-chevron-right ml-1"></i>
+                                </a>
+                                {% else %}
+                                <span class="px-3 py-2 bg-gray-900 text-gray-500 rounded-md text-sm cursor-not-allowed">
+                                    Next <i class="fas fa-chevron-right ml-1"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if trades|length == 0 %}
+                        <div class="text-center py-16 px-6 bg-gray-800/30 rounded-lg shadow-inner border border-gray-700/50">
+                            <svg class="mx-auto h-16 w-16 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <h3 class="mt-4 text-xl font-semibold text-white">No trades found</h3>
+                            <p class="mt-2 text-gray-400 max-w-md mx-auto">Your trading journal is empty. Start tracking your trades to gain insights into your trading performance.</p>
+                            <div class="mt-8">
+                                <a href="{{ url_for('add_trade') }}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-all duration-200 transform hover:-translate-y-1">
+                                    <svg class="-ml-1 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Record Your First Trade
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- List View -->
+                    <div id="list-view" class="hidden w-full">
+                        <div class="mt-6 space-y-4">
+                            {% if trades %}
+                                {% for trade in trades %}
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300">
+                                        <div class="px-4 py-5 sm:px-6">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-3">
+                                                    {% if trade.trade_type == 'long' %}
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                            Long
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                            Short
+                                                        </span>
+                                                    {% endif %}
+                                                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                                                        {{ trade.symbol }}
+                                                    </h3>
+                                                </div>
+                                                <div class="text-sm font-medium">
+                                                    <a href="{{ url_for('view_trade', trade_id=trade.id) }}" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-0">
+                                            <dl class="sm:divide-y sm:divide-gray-200 dark:sm:divide-gray-700">
+                                                <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Entry Date</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{{ trade.date_formatted if 'date_formatted' in trade else trade.date }}</dd>
+                                                </div>
+                                                <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Exit Date</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{{ trade.exit_date if 'exit_date' in trade else 'N/A' }}</dd>
+                                                </div>
+                                                <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Entry/Exit Price</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{{ trade.entry_price_formatted if 'entry_price_formatted' in trade else trade.entry_price }} / {{ trade.exit_price_formatted if 'exit_price_formatted' in trade and trade.exit_price else 'Open' }}</dd>
+                                                </div>
+                                                <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Strategy</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{{ trade.strategy }}</dd>
+                                                </div>
+                                                <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">P&L</dt>
+                                                    <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
+                                                        {% if trade.pnl_formatted is defined %}
+                                                            <span class="{% if trade.pnl > 0 %}text-green-600 dark:text-green-400{% elif trade.pnl < 0 %}text-red-600 dark:text-red-400{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                                                                {{ trade.pnl_formatted }}
+                                                            </span>
+                                                        {% elif trade.pnl is defined and trade.pnl != None %}
+                                                            <span class="{% if trade.pnl > 0 %}text-green-600 dark:text-green-400{% elif trade.pnl < 0 %}text-red-600 dark:text-red-400{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                                                                {{ trade.pnl }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-gray-500 dark:text-gray-400">Open</span>
+                                                        {% endif %}
+                                                    </dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                    </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if total_pages > 1 %}
-                    <div class="px-6 py-4 flex justify-between items-center border-t border-gray-700">
-                        <div class="text-sm text-gray-400">
-                            Showing {{ (page - 1) * per_page + 1 }} to {{ min((page * per_page), total_trades) }} of {{ total_trades }} trades
-                        </div>
-                        <div class="flex space-x-1">
-                            {% if page > 1 %}
-                            <a href="?page={{ page - 1 }}" class="btn-secondary px-3 py-1 text-sm">
-                                <i class="fas fa-chevron-left mr-1"></i> Prev
-                            </a>
-                            {% endif %}
-                            
-                            <span class="px-3 py-1 text-sm">{{ page }} of {{ total_pages }}</span>
-                            
-                            {% if page < total_pages %}
-                            <a href="?page={{ page + 1 }}" class="btn-secondary px-3 py-1 text-sm">
-                                Next <i class="fas fa-chevron-right ml-1"></i>
-                            </a>
+                            {% else %}
+                                <div class="text-center py-10 px-6">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    </svg>
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No trades found</h3>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by recording your first trade.</p>
+                                    <div class="mt-6">
+                                        <a href="{{ url_for('add_trade') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            Record a Trade
+                                        </a>
+                                    </div>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    {% if trades|length == 0 %}
-                    <div class="p-8 text-center">
-                        <div class="text-gray-400 mb-4">
-                            <i class="fas fa-clipboard-list text-4xl"></i>
-                        </div>
-                        <h3 class="text-xl font-medium mb-2">No trades found</h3>
-                        <p class="text-gray-400 mb-4">You haven't recorded any trades yet or none match your current filters.</p>
-                        <a href="/add_trade" class="btn-primary inline-block">Record Your First Trade</a>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -223,25 +762,154 @@
             menu.classList.toggle('hidden');
         });
         
-        // Filters functionality
-        document.getElementById('symbol-filter').addEventListener('change', function() {
+        // Apply Filters
+        document.getElementById('apply-filters').addEventListener('click', function() {
             applyFilters();
         });
         
+        // Reset Filters
+        document.getElementById('reset-filters').addEventListener('click', function() {
+            window.location.href = '/trades';
+        });
+        
+        // Filter events
+        document.getElementById('symbol-filter').addEventListener('change', function() {
+            if (this.value) {
+                applyFilters();
+            }
+        });
+        
         document.getElementById('strategy-filter').addEventListener('change', function() {
+            if (this.value) {
+                applyFilters();
+            }
+        });
+        
+        document.getElementById('view-select').addEventListener('change', function() {
             applyFilters();
+        });
+        
+        document.getElementById('per-page').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        // Sort column headers
+        document.querySelectorAll('.sort-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const sort = this.getAttribute('data-sort');
+                let dir = '{{ sort_dir }}';
+                
+                // Toggle direction if already sorting by this column
+                if (sort === '{{ sort_by }}') {
+                    dir = dir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // Default to desc for new column sort
+                    dir = 'desc';
+                }
+                
+                // Apply new sort
+                const url = buildFilterUrl({ sort: sort, dir: dir });
+                window.location.href = url;
+            });
         });
         
         function applyFilters() {
             const symbol = document.getElementById('symbol-filter').value;
             const strategy = document.getElementById('strategy-filter').value;
+            const broker = document.getElementById('broker-filter').value;
+            const type = document.getElementById('type-filter').value;
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const view = document.getElementById('view-select').value;
+            const perPage = document.getElementById('per-page').value;
             
-            let url = '/trades?';
-            if (symbol) url += 'symbol=' + encodeURIComponent(symbol) + '&';
-            if (strategy) url += 'strategy=' + encodeURIComponent(strategy) + '&';
+            const url = buildFilterUrl({
+                symbol: symbol,
+                strategy: strategy,
+                broker: broker,
+                type: type,
+                date_from: dateFrom,
+                date_to: dateTo,
+                view: view,
+                per_page: perPage
+            });
             
-            window.location.href = url.endsWith('&') ? url.slice(0, -1) : url;
+            window.location.href = url;
         }
+        
+        function buildFilterUrl(params) {
+            let url = '/trades?';
+            let hasParams = false;
+            
+            // Include current sort parameters if not specified in params
+            if (!params.sort && '{{ sort_by }}') {
+                params.sort = '{{ sort_by }}';
+            }
+            
+            if (!params.dir && '{{ sort_dir }}') {
+                params.dir = '{{ sort_dir }}';
+            }
+            
+            // Build query string
+            for (const [key, value] of Object.entries(params)) {
+                if (value) {
+                    url += `${key}=${encodeURIComponent(value)}&`;
+                    hasParams = true;
+                }
+            }
+            
+            // Remove trailing '&' or '?' if no params
+            return hasParams ? url.slice(0, -1) : '/trades';
+        }
+
+        // View toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableViewBtn = document.getElementById('table-view-btn');
+            const listViewBtn = document.getElementById('list-view-btn');
+            const tableView = document.getElementById('table-view');
+            const listView = document.getElementById('list-view');
+            
+            // Default view is table view
+            tableView.classList.remove('hidden');
+            listView.classList.add('hidden');
+            
+            tableViewBtn.addEventListener('click', function() {
+                // Activate table view
+                tableView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                
+                // Update button styling
+                tableViewBtn.classList.remove('bg-gray-700');
+                tableViewBtn.classList.add('bg-indigo-600');
+                listViewBtn.classList.remove('bg-indigo-600');
+                listViewBtn.classList.add('bg-gray-700');
+                
+                // Save preference in localStorage
+                localStorage.setItem('tradeViewPreference', 'table');
+            });
+            
+            listViewBtn.addEventListener('click', function() {
+                // Activate list view
+                tableView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                
+                // Update button styling
+                listViewBtn.classList.remove('bg-gray-700');
+                listViewBtn.classList.add('bg-indigo-600');
+                tableViewBtn.classList.remove('bg-indigo-600');
+                tableViewBtn.classList.add('bg-gray-700');
+                
+                // Save preference in localStorage
+                localStorage.setItem('tradeViewPreference', 'list');
+            });
+            
+            // Check if there's a saved preference
+            const savedViewPreference = localStorage.getItem('tradeViewPreference');
+            if (savedViewPreference === 'list') {
+                // Trigger list view
+                listViewBtn.click();
+            }
+        });
     </script>
     
     <script src="{{ url_for('static', filename='js/google-auth.js') }}"></script>

@@ -49,9 +49,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center">
-                        <i class="fas fa-chart-line text-purple-500 text-2xl mr-2"></i>
-                        <span class="text-2xl font-bold">Tract<span class="gradient-text">ional</span></span>
+                    <a href="/" class="text-2xl font-bold gradient-text smaller-logo flex items-center">
+                        <img src="{{ url_for('static', filename='images/logos.png') }}" alt="Logo" class="h-8 w-8 mr-2">
+                        <span>Tractional</span>
                     </a>
                 </div>
                 <div class="hidden md:flex items-center space-x-6">
@@ -335,7 +335,7 @@
 
                 <!-- Screenshot 3 -->
                 <div class="bg-gray-900 bg-opacity-50 rounded-xl overflow-hidden border border-gray-800 card-hover">
-                    <img src="{{ url_for('static', filename='images/Dashboard.png') }}" alt="Strategy Analysis" class="w-full h-auto">
+                    <img src="{{ url_for('static', filename='images/Dashboard3.png') }}" alt="Strategy Analysis" class="w-full h-auto">
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-white">In-Depth Strategy Analysis</h3>
                         <p class="mt-2 text-base text-gray-300">Discover which strategies are most profitable.</p>
