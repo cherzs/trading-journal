@@ -5,26 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Trades - Tractional</title>
     <meta name="google-signin-client_id" content="{{ google_client_id }}.apps.googleusercontent.com">
+    <link rel="icon" href="{{ url_for('static', filename='images/logos.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s;
+        }
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(124, 58, 237, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(124, 58, 237, 0.2);
+            border-left: 3px solid rgb(124, 58, 237);
+        }
+        .smaller-logo {
+            transform: scale(0.85);
+        }
+    </style>
 </head>
 <body class="gradient-bg text-gray-100">
-    <!-- Navigation -->
-    <nav class="glass-container py-4 px-6 mb-8">
+    <!-- Top Navigation -->
+    <nav class="glass-container py-4 px-6 sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="/" class="flex items-center">
-                    <img src="{{ url_for('static', filename='images/logos.png') }}" alt="Logo" class="h-14 w-14 mr-2">
-                    <span class="text-2xl font-bold gradient-text">Tractional</span>
+                <a href="/" class="text-2xl font-bold gradient-text smaller-logo flex items-center">
+                    <img src="{{ url_for('static', filename='images/logos.png') }}" alt="Logo" class="h-10 w-10 mr-2">
+                    <span>Tractional</span>
                 </a>
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="/dashboard" class="text-gray-300 hover:text-white transition">Dashboard</a>
-                <a href="/trades" class="text-white font-medium border-b-2 border-purple-500">Trades</a>
-                <a href="/add_trade" class="text-gray-300 hover:text-white transition">Add Trade</a>
-                <a href="/settings" class="text-gray-300 hover:text-white transition">Settings</a>
+                <!-- Top nav items hidden on mobile -->
             </div>
             <div class="flex items-center space-x-4">
                 <a href="/logout" class="text-gray-300 hover:text-white transition">
@@ -46,129 +63,156 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 pb-12">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <h1 class="text-3xl font-bold mb-4 md:mb-0">Your Trades</h1>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 bg-gray-900 bg-opacity-70 min-h-screen fixed left-0 top-16 p-4 hidden md:block">
             
-            <div class="flex flex-col sm:flex-row gap-4">
-                <!-- Search and Filters -->
-                <div class="flex">
-                    <select id="symbol-filter" class="mr-2 rounded-l-md rounded-r-none border-r-0">
-                        <option value="">All Symbols</option>
-                        {% for symbol in symbols %}
-                        <option value="{{ symbol }}">{{ symbol }}</option>
-                        {% endfor %}
-                    </select>
-                    <select id="strategy-filter" class="rounded-r-md rounded-l-none">
-                        <option value="">All Strategies</option>
-                        {% for strategy in strategies %}
-                        <option value="{{ strategy }}">{{ strategy }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <a href="/add_trade" class="btn-primary flex items-center justify-center">
-                    <i class="fas fa-plus mr-2"></i> Add New Trade
+            <div class="space-y-2">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-chart-line mr-3 w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/trades" class="sidebar-item active flex items-center px-4 py-3 rounded-md text-white font-medium">
+                    <i class="fas fa-list-ul mr-3 w-5 text-center"></i>
+                    <span>Trades</span>
+                </a>
+                <a href="/add_trade" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-plus mr-3 w-5 text-center"></i>
+                    <span>Add Trade</span>
+                </a>
+                <a href="/settings" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-cog mr-3 w-5 text-center"></i>
+                    <span>Settings</span>
                 </a>
             </div>
         </div>
-        
-        <!-- Trades Table -->
-        <div class="card overflow-hidden">
-            <div class="overflow-x-auto" style="width: 100%;">
-                <table class="w-full table-auto">
-                    <thead class="bg-gray-800">
-                        <tr>
-                            <th class="w-24 px-3 py-3 text-left">Date</th>
-                            <th class="w-20 px-3 py-3 text-left">Symbol</th>
-                            <th class="w-16 px-3 py-3 text-left">Type</th>
-                            <th class="w-20 px-3 py-3 text-left">Broker</th>
-                            <th class="w-28 px-3 py-3 text-left">Strategy</th>
-                            <th class="w-20 px-3 py-3 text-left">Entry</th>
-                            <th class="w-20 px-3 py-3 text-left">Exit</th>
-                            <th class="w-16 px-3 py-3 text-left">Size</th>
-                            <th class="w-20 px-3 py-3 text-left">P/L</th>
-                            <th class="w-24 px-3 py-3 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for trade in trades %}
-                        <tr class="border-t border-gray-700 hover:bg-gray-800">
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.date }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.symbol }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap">
-                                {% if trade.trade_type == 'long' %}
-                                <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-full text-xs">Long</span>
-                                {% else %}
-                                <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-full text-xs">Short</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.broker }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap truncate max-w-xs">{{ trade.strategy }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.entry_price_formatted }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.exit_price_formatted }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap">{{ trade.size }}</td>
-                            <td class="px-3 py-3 whitespace-nowrap {% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
-                                {{ trade.pnl_formatted }}
-                            </td>
-                            <td class="px-3 py-3 whitespace-nowrap">
-                                <div class="flex space-x-3">
-                                    <a href="/trade/{{ trade.id }}" class="text-indigo-400 hover:text-indigo-300" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="/edit_trade/{{ trade.id }}" class="text-blue-400 hover:text-blue-300" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form method="POST" action="/delete_trade/{{ trade.id }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this trade?')">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            {% if total_pages > 1 %}
-            <div class="px-6 py-4 flex justify-between items-center border-t border-gray-700">
-                <div class="text-sm text-gray-400">
-                    Showing {{ (page - 1) * per_page + 1 }} to {{ min((page * per_page), total_trades) }} of {{ total_trades }} trades
+
+        <!-- Main Content -->
+        <div class="md:ml-64 w-full">
+            <div class="container mx-auto px-4 py-8 pb-12">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <h1 class="text-3xl font-bold mb-4 md:mb-0">Your Trades</h1>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <!-- Search and Filters -->
+                        <div class="flex">
+                            <select id="symbol-filter" class="mr-2 rounded-l-md rounded-r-none border-r-0 text-white bg-gray-800 border border-gray-700">
+                                <option value="">All Symbols</option>
+                                {% for symbol in symbols %}
+                                <option value="{{ symbol }}">{{ symbol }}</option>
+                                {% endfor %}
+                            </select>
+                            <select id="strategy-filter" class="rounded-r-md rounded-l-none text-white bg-gray-800 border border-gray-700">
+                                <option value="">All Strategies</option>
+                                {% for strategy in strategies %}
+                                <option value="{{ strategy }}">{{ strategy }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <a href="/add_trade" class="btn-primary flex items-center justify-center">
+                            <i class="fas fa-plus mr-2"></i> Add New Trade
+                        </a>
+                    </div>
                 </div>
-                <div class="flex space-x-1">
-                    {% if page > 1 %}
-                    <a href="?page={{ page - 1 }}" class="btn-secondary px-3 py-1 text-sm">
-                        <i class="fas fa-chevron-left mr-1"></i> Prev
-                    </a>
+                
+                <!-- Trades Table -->
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto" style="width: 100%;">
+                        <table class="w-full table-auto">
+                            <thead class="bg-gray-800">
+                                <tr>
+                                    <th class="w-24 px-3 py-3 text-left">Date</th>
+                                    <th class="w-20 px-3 py-3 text-left">Symbol</th>
+                                    <th class="w-16 px-3 py-3 text-left">Type</th>
+                                    <th class="w-20 px-3 py-3 text-left">Broker</th>
+                                    <th class="w-28 px-3 py-3 text-left">Strategy</th>
+                                    <th class="w-20 px-3 py-3 text-left">Entry</th>
+                                    <th class="w-20 px-3 py-3 text-left">Exit</th>
+                                    <th class="w-16 px-3 py-3 text-left">Size</th>
+                                    <th class="w-20 px-3 py-3 text-left">P/L</th>
+                                    <th class="w-24 px-3 py-3 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in trades %}
+                                <tr class="border-t border-gray-700 hover:bg-gray-800">
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.date }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.symbol }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">
+                                        {% if trade.trade_type == 'long' %}
+                                        <span class="px-2 py-1 bg-green-900 bg-opacity-30 text-green-400 rounded-full text-xs">Long</span>
+                                        {% else %}
+                                        <span class="px-2 py-1 bg-red-900 bg-opacity-30 text-red-400 rounded-full text-xs">Short</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.broker }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap truncate max-w-xs">{{ trade.strategy }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.entry_price_formatted }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.exit_price_formatted }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">{{ trade.size }}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap {% if trade.pnl > 0 %}profit{% else %}loss{% endif %}">
+                                        {{ trade.pnl_formatted }}
+                                    </td>
+                                    <td class="px-3 py-3 whitespace-nowrap">
+                                        <div class="flex space-x-3">
+                                            <a href="/trade/{{ trade.id }}" class="text-indigo-400 hover:text-indigo-300" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="/edit_trade/{{ trade.id }}" class="text-blue-400 hover:text-blue-300" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="POST" action="/delete_trade/{{ trade.id }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this trade?')">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <div class="px-6 py-4 flex justify-between items-center border-t border-gray-700">
+                        <div class="text-sm text-gray-400">
+                            Showing {{ (page - 1) * per_page + 1 }} to {{ min((page * per_page), total_trades) }} of {{ total_trades }} trades
+                        </div>
+                        <div class="flex space-x-1">
+                            {% if page > 1 %}
+                            <a href="?page={{ page - 1 }}" class="btn-secondary px-3 py-1 text-sm">
+                                <i class="fas fa-chevron-left mr-1"></i> Prev
+                            </a>
+                            {% endif %}
+                            
+                            <span class="px-3 py-1 text-sm">{{ page }} of {{ total_pages }}</span>
+                            
+                            {% if page < total_pages %}
+                            <a href="?page={{ page + 1 }}" class="btn-secondary px-3 py-1 text-sm">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endif %}
                     
-                    <span class="px-3 py-1 text-sm">{{ page }} of {{ total_pages }}</span>
-                    
-                    {% if page < total_pages %}
-                    <a href="?page={{ page + 1 }}" class="btn-secondary px-3 py-1 text-sm">
-                        Next <i class="fas fa-chevron-right ml-1"></i>
-                    </a>
+                    {% if trades|length == 0 %}
+                    <div class="p-8 text-center">
+                        <div class="text-gray-400 mb-4">
+                            <i class="fas fa-clipboard-list text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-medium mb-2">No trades found</h3>
+                        <p class="text-gray-400 mb-4">You haven't recorded any trades yet or none match your current filters.</p>
+                        <a href="/add_trade" class="btn-primary inline-block">Record Your First Trade</a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
-            {% endif %}
-            
-            {% if trades|length == 0 %}
-            <div class="p-8 text-center">
-                <div class="text-gray-400 mb-4">
-                    <i class="fas fa-clipboard-list text-4xl"></i>
-                </div>
-                <h3 class="text-xl font-medium mb-2">No trades found</h3>
-                <p class="text-gray-400 mb-4">You haven't recorded any trades yet or none match your current filters.</p>
-                <a href="/add_trade" class="btn-primary inline-block">Record Your First Trade</a>
-            </div>
-            {% endif %}
         </div>
     </div>
 

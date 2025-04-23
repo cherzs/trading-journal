@@ -5,26 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Tractional</title>
     <meta name="google-signin-client_id" content="{{ google_client_id }}.apps.googleusercontent.com">
+    <link rel="icon" href="{{ url_for('static', filename='images/logos.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s;
+        }
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(124, 58, 237, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(124, 58, 237, 0.2);
+            border-left: 3px solid rgb(124, 58, 237);
+        }
+        .smaller-logo {
+            transform: scale(0.85);
+        }
+    </style>
 </head>
 <body class="gradient-bg text-gray-100">
-    <!-- Navigation -->
-    <nav class="glass-container py-4 px-6 mb-8">
+    <!-- Top Navigation -->
+    <nav class="glass-container py-4 px-6 sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="/" class="text-2xl font-bold gradient-text">
-                    <i class="fas fa-chart-line mr-2"></i>Tractional
+                <a href="/" class="text-2xl font-bold gradient-text smaller-logo flex items-center">
+                    <img src="{{ url_for('static', filename='images/logos.png') }}" alt="Logo" class="h-10 w-10 mr-2">
+                    <span>Tractional</span>
                 </a>
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="/dashboard" class="text-white font-medium border-b-2 border-purple-500">Dashboard</a>
-                <a href="/trades" class="text-gray-300 hover:text-white transition">Trades</a>
-                <a href="/add_trade" class="text-gray-300 hover:text-white transition">Add Trade</a>
-                <a href="/settings" class="text-gray-300 hover:text-white transition">Settings</a>
+                <!-- Top nav items hidden on mobile -->
             </div>
             <div class="flex items-center space-x-4">
                 <a href="/logout" class="text-gray-300 hover:text-white transition">
@@ -46,178 +64,205 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 pb-12">
-        <!-- Welcome & Date -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold mb-2">Welcome Back{% if user %}, {{ user.name }}{% endif %}</h1>
-                <p class="text-gray-400">{{ current_date }}</p>
-            </div>
-            <a href="/add_trade" class="btn-primary mt-4 md:mt-0">
-                <i class="fas fa-plus mr-2"></i> Add New Trade
-            </a>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-gray-400 mb-1">Total Trades</h3>
-                        <p class="text-2xl font-bold">{{ total_trades }}</p>
-                    </div>
-                    <div class="rounded-full p-3 bg-purple-900 bg-opacity-50">
-                        <i class="fas fa-chart-bar text-purple-400"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-400">
-                    <span class="{% if total_trades_change > 0 %}text-green-400{% elif total_trades_change < 0 %}text-red-400{% endif %}">
-                        {% if total_trades_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif total_trades_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
-                        {{ total_trades_change|abs }}
-                    </span>
-                    since last week
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-gray-400 mb-1">Win Rate</h3>
-                        <p class="text-2xl font-bold">{{ win_rate }}%</p>
-                    </div>
-                    <div class="rounded-full p-3 bg-blue-900 bg-opacity-50">
-                        <i class="fas fa-trophy text-blue-400"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-400">
-                    <span class="{% if win_rate_change > 0 %}text-green-400{% elif win_rate_change < 0 %}text-red-400{% endif %}">
-                        {% if win_rate_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif win_rate_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
-                        {{ win_rate_change|abs }}%
-                    </span>
-                    since last week
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-gray-400 mb-1">Profit Factor</h3>
-                        <p class="text-2xl font-bold">{{ profit_factor }}</p>
-                    </div>
-                    <div class="rounded-full p-3 bg-indigo-900 bg-opacity-50">
-                        <i class="fas fa-balance-scale text-indigo-400"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-400">
-                    <span class="{% if profit_factor_change > 0 %}text-green-400{% elif profit_factor_change < 0 %}text-red-400{% endif %}">
-                        {% if profit_factor_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif profit_factor_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
-                        {{ profit_factor_change|abs }}
-                    </span>
-                    since last week
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-gray-400 mb-1">Total P&L</h3>
-                        <p class="text-2xl font-bold {% if total_pnl > 0 %}text-green-500{% elif total_pnl < 0 %}text-red-500{% endif %}">
-                            {% if total_pnl > 0 %}+{% endif %}${{ total_pnl }}
-                        </p>
-                    </div>
-                    <div class="rounded-full p-3 {% if total_pnl > 0 %}bg-green-900 bg-opacity-50{% elif total_pnl < 0 %}bg-red-900 bg-opacity-50{% else %}bg-gray-900 bg-opacity-50{% endif %}">
-                        <i class="fas fa-dollar-sign {% if total_pnl > 0 %}text-green-400{% elif total_pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-400">
-                    <span class="{% if pnl_change > 0 %}text-green-400{% elif pnl_change < 0 %}text-red-400{% endif %}">
-                        {% if pnl_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif pnl_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
-                        ${{ pnl_change|abs }}
-                    </span>
-                    since last week
-                </div>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 bg-gray-900 bg-opacity-70 min-h-screen fixed left-0 top-16 p-4 hidden md:block">
+            
+            <div class="space-y-2">
+                <a href="/dashboard" class="sidebar-item active flex items-center px-4 py-3 rounded-md text-white font-medium">
+                    <i class="fas fa-chart-line mr-3 w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/trades" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-list-ul mr-3 w-5 text-center"></i>
+                    <span>Trades</span>
+                </a>
+                <a href="/add_trade" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-plus mr-3 w-5 text-center"></i>
+                    <span>Add Trade</span>
+                </a>
+                <a href="/settings" class="sidebar-item flex items-center px-4 py-3 rounded-md text-gray-300 hover:text-white">
+                    <i class="fas fa-cog mr-3 w-5 text-center"></i>
+                    <span>Settings</span>
+                </a>
             </div>
         </div>
 
-        <!-- Charts and Recent Trades -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- P&L Chart -->
-            <div class="card lg:col-span-2">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold mb-6">Performance Chart</h2>
-                    <div class="h-80">
-                        <canvas id="pnlChart"></canvas>
+        <!-- Main Content -->
+        <div class="md:ml-64 w-full">
+            <div class="container mx-auto px-4 py-8 pb-12">
+                <!-- Welcome & Date -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Welcome Back{% if user %}, {{ user.name }}{% endif %}</h1>
+                        <p class="text-gray-400">{{ current_date }}</p>
                     </div>
+                    <a href="/add_trade" class="btn-primary mt-4 md:mt-0">
+                        <i class="fas fa-plus mr-2"></i> Add New Trade
+                    </a>
                 </div>
-            </div>
 
-            <!-- Recent Trades -->
-            <div class="card">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold">Recent Trades</h2>
-                        <a href="/trades" class="text-purple-400 hover:text-purple-300 text-sm">View All</a>
-                    </div>
-                    
-                    {% if recent_trades %}
-                    <div class="space-y-4">
-                        {% for trade in recent_trades %}
-                        <div class="flex items-center p-3 rounded-lg {% if trade.pnl > 0 %}bg-green-900{% elif trade.pnl < 0 %}bg-red-900{% else %}bg-gray-800{% endif %} bg-opacity-20">
-                            <div class="rounded-full w-10 h-10 flex items-center justify-center {% if trade.pnl > 0 %}bg-green-900{% elif trade.pnl < 0 %}bg-red-900{% else %}bg-gray-800{% endif %} bg-opacity-30 mr-4">
-                                {% if trade.trade_type == 'long' %}
-                                <i class="fas fa-arrow-up {% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
-                                {% else %}
-                                <i class="fas fa-arrow-down {% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
-                                {% endif %}
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-400 mb-1">Total Trades</h3>
+                                <p class="text-2xl font-bold">{{ total_trades }}</p>
                             </div>
-                            <div class="flex-1">
-                                <div class="flex justify-between">
-                                    <p class="font-medium">{{ trade.symbol }}</p>
-                                    <p class="{% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}">
-                                        {% if trade.pnl > 0 %}+{% endif %}{{ trade.pnl_formatted }}
-                                    </p>
-                                </div>
-                                <div class="flex justify-between text-sm text-gray-400">
-                                    <p>{{ trade.date }}</p>
-                                    <p>{{ trade.strategy }}</p>
-                                </div>
+                            <div class="rounded-full p-3 bg-purple-900 bg-opacity-50">
+                                <i class="fas fa-chart-bar text-purple-400"></i>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="text-center py-8">
-                        <div class="text-gray-400 mb-4">
-                            <i class="fas fa-chart-line text-4xl"></i>
+                        <div class="mt-2 text-sm text-gray-400">
+                            <span class="{% if total_trades_change > 0 %}text-green-400{% elif total_trades_change < 0 %}text-red-400{% endif %}">
+                                {% if total_trades_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif total_trades_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
+                                {{ total_trades_change|abs }}
+                            </span>
+                            since last week
                         </div>
-                        <h3 class="text-lg font-medium mb-2">No trades yet</h3>
-                        <p class="text-gray-400 mb-4">Start recording your trades to see them here</p>
-                        <a href="/add_trade" class="btn-primary inline-block">Add Trade</a>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
 
-        <!-- Bottom Section (Strategy Analysis) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <!-- Strategy Performance -->
-            <div class="card">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold mb-6">Strategy Performance</h2>
-                    <div class="h-64">
-                        <canvas id="strategyChart"></canvas>
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-400 mb-1">Win Rate</h3>
+                                <p class="text-2xl font-bold">{{ win_rate }}%</p>
+                            </div>
+                            <div class="rounded-full p-3 bg-blue-900 bg-opacity-50">
+                                <i class="fas fa-trophy text-blue-400"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-400">
+                            <span class="{% if win_rate_change > 0 %}text-green-400{% elif win_rate_change < 0 %}text-red-400{% endif %}">
+                                {% if win_rate_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif win_rate_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
+                                {{ win_rate_change|abs }}%
+                            </span>
+                            since last week
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-400 mb-1">Profit Factor</h3>
+                                <p class="text-2xl font-bold">{{ profit_factor }}</p>
+                            </div>
+                            <div class="rounded-full p-3 bg-indigo-900 bg-opacity-50">
+                                <i class="fas fa-balance-scale text-indigo-400"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-400">
+                            <span class="{% if profit_factor_change > 0 %}text-green-400{% elif profit_factor_change < 0 %}text-red-400{% endif %}">
+                                {% if profit_factor_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif profit_factor_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
+                                {{ profit_factor_change|abs }}
+                            </span>
+                            since last week
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-400 mb-1">Total P&L</h3>
+                                <p class="text-2xl font-bold {% if total_pnl > 0 %}text-green-500{% elif total_pnl < 0 %}text-red-500{% endif %}">
+                                    {% if total_pnl > 0 %}+{% endif %}${{ total_pnl }}
+                                </p>
+                            </div>
+                            <div class="rounded-full p-3 {% if total_pnl > 0 %}bg-green-900 bg-opacity-50{% elif total_pnl < 0 %}bg-red-900 bg-opacity-50{% else %}bg-gray-900 bg-opacity-50{% endif %}">
+                                <i class="fas fa-dollar-sign {% if total_pnl > 0 %}text-green-400{% elif total_pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-400">
+                            <span class="{% if pnl_change > 0 %}text-green-400{% elif pnl_change < 0 %}text-red-400{% endif %}">
+                                {% if pnl_change > 0 %}<i class="fas fa-arrow-up mr-1"></i>{% elif pnl_change < 0 %}<i class="fas fa-arrow-down mr-1"></i>{% endif %}
+                                ${{ pnl_change|abs }}
+                            </span>
+                            since last week
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Symbol Performance -->
-            <div class="card">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold mb-6">Symbol Performance</h2>
-                    <div class="h-64">
-                        <canvas id="symbolChart"></canvas>
+                <!-- Charts and Recent Trades -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- P&L Chart -->
+                    <div class="card lg:col-span-2">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Performance Chart</h2>
+                            <div class="h-80">
+                                <canvas id="pnlChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Trades -->
+                    <div class="card">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-bold">Recent Trades</h2>
+                                <a href="/trades" class="text-purple-400 hover:text-purple-300 text-sm">View All</a>
+                            </div>
+                            
+                            {% if recent_trades %}
+                            <div class="space-y-4">
+                                {% for trade in recent_trades %}
+                                <div class="flex items-center p-3 rounded-lg {% if trade.pnl > 0 %}bg-green-900{% elif trade.pnl < 0 %}bg-red-900{% else %}bg-gray-800{% endif %} bg-opacity-20">
+                                    <div class="rounded-full w-10 h-10 flex items-center justify-center {% if trade.pnl > 0 %}bg-green-900{% elif trade.pnl < 0 %}bg-red-900{% else %}bg-gray-800{% endif %} bg-opacity-30 mr-4">
+                                        {% if trade.trade_type == 'long' %}
+                                        <i class="fas fa-arrow-up {% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
+                                        {% else %}
+                                        <i class="fas fa-arrow-down {% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <p class="font-medium">{{ trade.symbol }}</p>
+                                            <p class="{% if trade.pnl > 0 %}text-green-400{% elif trade.pnl < 0 %}text-red-400{% else %}text-gray-400{% endif %}">
+                                                {% if trade.pnl > 0 %}+{% endif %}{{ trade.pnl_formatted }}
+                                            </p>
+                                        </div>
+                                        <div class="flex justify-between text-sm text-gray-400">
+                                            <p>{{ trade.date }}</p>
+                                            <p>{{ trade.strategy }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 mb-4">
+                                    <i class="fas fa-chart-line text-4xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium mb-2">No trades yet</h3>
+                                <p class="text-gray-400 mb-4">Start recording your trades to see them here</p>
+                                <a href="/add_trade" class="btn-primary inline-block">Add Trade</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section (Strategy Analysis) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <!-- Strategy Performance -->
+                    <div class="card">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Strategy Performance</h2>
+                            <div class="h-64">
+                                <canvas id="strategyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Symbol Performance -->
+                    <div class="card">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-6">Symbol Performance</h2>
+                            <div class="h-64">
+                                <canvas id="symbolChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -250,43 +295,36 @@
                 datasets: [{
                     label: 'Daily P&L',
                     data: pnlChartData.daily_pnl,
-                    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                    borderColor: 'rgba(139, 92, 246, 1)',
+                    backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                    borderColor: 'rgba(124, 58, 237, 1)',
                     borderWidth: 2,
-                    tension: 0.3,
-                    pointBackgroundColor: 'rgba(139, 92, 246, 1)',
-                }, {
+                    pointBackgroundColor: 'rgba(124, 58, 237, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    tension: 0.1
+                },
+                {
                     label: 'Cumulative P&L',
                     data: pnlChartData.cumulative_pnl,
-                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                    borderColor: 'rgba(79, 70, 229, 1)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
                     borderWidth: 2,
-                    tension: 0.3,
-                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                    pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    tension: 0.1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.8)'
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
                 scales: {
                     x: {
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.6)'
+                            color: 'rgba(255, 255, 255, 0.7)'
                         }
                     },
                     y: {
@@ -294,49 +332,62 @@
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            callback: function(value) {
-                                return '$' + value;
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: 'rgba(255, 255, 255, 1)',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                }
+                                return label;
                             }
                         }
                     }
                 }
             }
         });
-
-        // Strategy Chart
+        
+        // Strategy Performance Chart
         const strategyCtx = document.getElementById('strategyChart').getContext('2d');
         
         new Chart(strategyCtx, {
             type: 'bar',
             data: {
-                labels: strategyData.names,
+                labels: strategyData.strategies,
                 datasets: [{
-                    label: 'Win Rate (%)',
-                    data: strategyData.win_rates,
-                    backgroundColor: 'rgba(139, 92, 246, 0.7)',
-                    borderColor: 'rgba(139, 92, 246, 1)',
+                    label: 'P&L by Strategy',
+                    data: strategyData.pnl,
+                    backgroundColor: strategyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                    borderColor: strategyData.pnl.map(value => value >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'),
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.8)'
-                        }
-                    }
-                },
                 scales: {
                     x: {
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.6)'
+                            color: 'rgba(255, 255, 255, 0.7)'
                         }
                     },
                     y: {
@@ -344,59 +395,88 @@
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            callback: function(value) {
-                                return value + '%';
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: 'rgba(255, 255, 255, 1)',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                }
+                                return label;
                             }
-                        },
-                        beginAtZero: true,
-                        max: 100
+                        }
                     }
                 }
             }
         });
-
-        // Symbol Chart
+        
+        // Symbol Performance Chart
         const symbolCtx = document.getElementById('symbolChart').getContext('2d');
         
         new Chart(symbolCtx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: symbolData.symbols,
                 datasets: [{
-                    data: symbolData.pnl_values,
-                    backgroundColor: [
-                        'rgba(139, 92, 246, 0.8)',
-                        'rgba(79, 70, 229, 0.8)',
-                        'rgba(124, 58, 237, 0.8)',
-                        'rgba(109, 40, 217, 0.8)',
-                        'rgba(91, 33, 182, 0.8)',
-                        'rgba(76, 29, 149, 0.8)',
-                        'rgba(167, 139, 250, 0.8)',
-                        'rgba(196, 181, 253, 0.8)'
-                    ],
-                    borderColor: 'rgba(30, 30, 46, 1)',
-                    borderWidth: 2
+                    label: 'P&L by Symbol',
+                    data: symbolData.pnl,
+                    backgroundColor: symbolData.pnl.map(value => value >= 0 ? 'rgba(79, 70, 229, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                    borderColor: symbolData.pnl.map(value => value >= 0 ? 'rgba(79, 70, 229, 1)' : 'rgba(239, 68, 68, 1)'),
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.8)'
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
                         }
                     },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: 'rgba(255, 255, 255, 1)',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
                         callbacks: {
                             label: function(context) {
-                                let label = context.label || '';
+                                let label = context.dataset.label || '';
                                 if (label) {
                                     label += ': ';
                                 }
-                                label += '$' + context.raw;
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                }
                                 return label;
                             }
                         }
