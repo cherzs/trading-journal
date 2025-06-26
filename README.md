@@ -1,124 +1,199 @@
-# Tractional - Trading Journal & Strategy Backtester
+# Trading Journal - Full Stack Application
 
-A comprehensive web application for traders to track, analyze, and improve their trading performance. The application includes features for tracking trades, analyzing strategy performance, and generating visual statistics to enhance decision-making.
+A modern trading journal application built with **Flask** (Backend API) and **React** (Frontend).
 
-## Features
+## 🏗️ Architecture
 
-- **Trade Tracking**: Record detailed information about each trade, including entry/exit prices, stop loss, take profit, screenshots, and notes.
-- **Performance Dashboard**: View key metrics like win rate, profit factor, and total P&L at a glance.
-- **Strategy Analysis**: Evaluate which strategies work best through detailed breakdowns and visualizations.
-- **Visual Statistics**: Interactive charts showing cumulative performance, strategy comparison, and win rate by day of the week.
-- **User Authentication**: Secure login and registration system with Google OAuth support.
-- **Responsive Design**: Works on desktop, tablet, and mobile devices.
+- **Backend**: Flask REST API with PostgreSQL database
+- **Frontend**: React with TypeScript, Tailwind CSS, and modern UI components
+- **Authentication**: JWT-based authentication
+- **Database**: PostgreSQL with SQLAlchemy ORM
 
-## Technology Stack
-
-- **Frontend**: HTML, CSS (Tailwind CSS), JavaScript
-- **Backend**: Python, Flask
-- **Database**: CSV-based storage (can be upgraded to SQL)
-- **Charts**: Chart.js
-- **Authentication**: Flask-Login, Google OAuth 2.0, bcrypt for password hashing
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 trading-journal/
-│
-├── App.py                # Main Flask application
-├── requirements.txt      # Python dependencies
-├── README.md             # Project documentation
-├── .env                  # Environment variables (not tracked by git)
-├── .gitignore            # Git ignore file
-│
-├── static/               # Static assets
-│   ├── css/              # CSS styles
-│   │   └── styles.css    # Custom styles
-│   ├── js/               # JavaScript files
-│   │   ├── main.js       # Main application logic
-│   │   └── google-auth.js # Google authentication functionality
-│   └── uploads/          # User uploaded files (screenshots)
-│
-├── data/                 # Data storage
-│   └── trades.csv        # Trade records
-│
-└── templates/            # HTML templates for Flask
-    ├── index.html        # Landing page
-    ├── login.html        # Login page
-    ├── register.html     # Registration page
-    ├── dashboard.html    # Main dashboard
-    ├── add_trade.html    # Add trade form
-    ├── trades.html       # Trade listing page
-    ├── trade_detail.html # Individual trade view
-    └── settings.html     # User settings page
+├── backend/                 # Flask API Backend
+│   ├── app.py              # Main Flask application
+│   ├── models.py           # Database models
+│   ├── routes.py           # API routes
+│   └── requirements.txt    # Python dependencies
+├── frontend/               # React Frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── contexts/       # React contexts
+│   │   ├── services/       # API services
+│   │   ├── types/          # TypeScript types
+│   │   └── App.tsx         # Main App component
+│   ├── package.json        # Node.js dependencies
+│   └── tailwind.config.js  # Tailwind CSS config
+├── .env                    # Environment variables
+└── README.md              # This file
 ```
 
-## Installation
+## 🚀 Quick Start
 
-1. Clone the repository
-2. Create and configure the `.env` file:
+### Prerequisites
+
+- Python 3.8+
+- Node.js 16+
+- PostgreSQL database
+
+### Backend Setup
+
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
    ```
-   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-   GOOGLE_CLIENT_SECRET=your-client-secret
+
+2. **Create virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-3. Install dependencies:
-   ```
+
+3. **Install dependencies:**
+   ```bash
    pip install -r requirements.txt
    ```
-4. Run the application:
+
+4. **Set up environment variables:**
+   Create a `.env` file in the root directory:
+   ```env
+   # Database Configuration
+   DB_HOST=akuntansi.cjwyqk8802ox.ap-southeast-2.rds.amazonaws.com
+   DB_PORT=5432
+   DB_NAME=trading_journal
+   DB_USER=postgres
+   DB_PASSWORD=your_password_here
+
+   # Flask Configuration
+   FLASK_APP=app.py
+   FLASK_ENV=development
+   SECRET_KEY=your_secret_key_here
+   JWT_SECRET_KEY=your_jwt_secret_key_here
+
+   # Other Configuration
+   DEBUG=True
    ```
-   python App.py
+
+5. **Run the Flask API:**
+   ```bash
+   python app.py
    ```
-5. Open your browser and navigate to `http://localhost:5000`
+   The API will be available at `http://localhost:5000`
 
-## Google OAuth Configuration
+### Frontend Setup
 
-To enable Google Sign-In for your application:
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Navigate to "APIs & Services" > "Credentials"
-4. Create an OAuth 2.0 Client ID (Web application)
-5. Add the following Authorized redirect URIs:
-   - `http://localhost:5000/login/google/callback`
-   - `http://127.0.0.1:5000/login/google/callback`
-6. Add Authorized JavaScript origins:
-   - `http://localhost:5000`
-   - `http://127.0.0.1:5000`
-7. Copy the Client ID and Client Secret to your `.env` file
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Environment Variables
+3. **Start the development server:**
+   ```bash
+   npm start
+   ```
+   The React app will be available at `http://localhost:3000`
 
-The following environment variables can be configured in the `.env` file:
+## 🔧 Features
 
-```
-# Required for Google OAuth
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
+### Backend (Flask API)
+- ✅ User authentication with JWT
+- ✅ User registration and login
+- ✅ Trade CRUD operations
+- ✅ Trade statistics and analytics
+- ✅ User preferences management
+- ✅ PostgreSQL database integration
+- ✅ RESTful API design
 
-# Optional email configuration (for verification emails)
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-email-password
-MAIL_DEFAULT_SENDER=your-email@gmail.com
-```
+### Frontend (React)
+- ✅ Modern, responsive UI with Tailwind CSS
+- ✅ User authentication flows
+- ✅ Dashboard with trade statistics
+- ✅ Trade management (add, edit, delete, view)
+- ✅ Form validation with React Hook Form
+- ✅ TypeScript for type safety
+- ✅ Mobile-responsive design
 
-## Usage
+## 📊 API Endpoints
 
-1. Register a new account, sign in with Google, or use the demo account (email: demo@example.com, password: demo)
-2. Navigate to the dashboard to view your trading performance
-3. Add new trades using the "Add Trade" page
-4. View all your trades in the "Trades" section
-5. Analyze your performance with the provided charts and statistics
-6. Adjust your settings in the "Settings" page
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get user profile
 
-## License
+### Trades
+- `GET /api/trades` - Get user trades (with pagination and filters)
+- `POST /api/trades` - Create new trade
+- `GET /api/trades/:id` - Get specific trade
+- `PUT /api/trades/:id` - Update trade
+- `DELETE /api/trades/:id` - Delete trade
+- `GET /api/trades/stats` - Get trade statistics
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### User Preferences
+- `GET /api/users/preferences` - Get user preferences
+- `PUT /api/users/preferences` - Update user preferences
 
-## Acknowledgments
+## 🛠️ Development
 
-- Built with [Flask](https://flask.palletsprojects.com/)
-- UI powered by [Tailwind CSS](https://tailwindcss.com/)
-- Charts created with [Chart.js](https://www.chartjs.org/)
-- Authentication with [Google Sign-In](https://developers.google.com/identity) 
+### Backend Development
+- The Flask API uses SQLAlchemy for database operations
+- JWT tokens for authentication
+- CORS enabled for frontend communication
+- Environment variables for configuration
+
+### Frontend Development
+- React with TypeScript for type safety
+- Tailwind CSS for styling
+- React Router for navigation
+- React Hook Form for form handling
+- Axios for API communication
+
+## 🔒 Security
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- CORS configuration
+- Environment variable management
+- Input validation and sanitization
+
+## 📱 Responsive Design
+
+The application is fully responsive and works on:
+- Desktop computers
+- Tablets
+- Mobile phones
+
+## 🚀 Deployment
+
+### Backend Deployment
+1. Set up a PostgreSQL database
+2. Configure environment variables
+3. Install Python dependencies
+4. Run with a WSGI server (Gunicorn)
+
+### Frontend Deployment
+1. Build the React app: `npm run build`
+2. Serve the static files with a web server (Nginx, Apache)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions, please open an issue in the repository. 
