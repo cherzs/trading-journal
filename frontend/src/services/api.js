@@ -77,6 +77,11 @@ export const tradeAPI = {
     const response = await api.get('/trades/analytics');
     return response.data;
   },
+
+  getStats: async () => {
+    const response = await api.get('/trades/analytics');
+    return response.data;
+  },
 };
 
 // User API

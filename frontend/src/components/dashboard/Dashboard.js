@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { tradesAPI } from '../../services/api';
+import { tradeAPI } from '../../services/api';
 import { TrendingUp, TrendingDown, DollarSign, Target, Plus } from 'lucide-react';
 
 const Dashboard = () => {
@@ -11,7 +11,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await tradesAPI.getStats();
+        const data = await tradeAPI.getStats();
         setStats(data);
       } catch (err) {
         setError(err.message);
