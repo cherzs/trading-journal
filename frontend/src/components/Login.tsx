@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { LogIn, Mail, Lock, TrendingUp } from 'lucide-react';
+import { LogIn, Mail, Lock, TrendingUp, ArrowLeft } from 'lucide-react';
 import { loginUser } from '../utils/auth';
 import { User } from '../types/Trade';
 
 interface LoginProps {
   onLogin: (user: User) => void;
   onSwitchToRegister: () => void;
+  onBack: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
+export const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister, onBack }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,6 +34,15 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.03%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="absolute top-6 left-6 flex items-center gap-2 text-blue-200 hover:text-white transition-colors duration-200 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20 hover:bg-white/20"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
       
       <div className="w-full max-w-md">
         <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 transform transition-all duration-300 hover:scale-[1.02]">

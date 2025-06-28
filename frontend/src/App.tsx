@@ -76,6 +76,7 @@ function App() {
       <Login 
         onLogin={handleLogin} 
         onSwitchToRegister={() => setAuthView('register')} 
+        onBack={() => setAuthView('landing')}
       />
     );
   }
@@ -83,6 +84,7 @@ function App() {
   return (
     <Register 
       onSwitchToLogin={() => setAuthView('login')} 
+      onBack={() => setAuthView('landing')}
     />
   );
 }

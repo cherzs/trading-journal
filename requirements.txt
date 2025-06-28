@@ -12,3 +12,10 @@ email-validator
 google-auth
 google-auth-oauthlib
 streamlit-authenticator
+Flask-CORS
+Flask-SQLAlchemy
+Flask-Session
+Flask-Migrate
+Werkzeug
+psycopg2-binary
+gunicorn
