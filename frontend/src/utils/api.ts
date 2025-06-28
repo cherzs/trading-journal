@@ -1,6 +1,7 @@
 import { Trade, PaginatedTrades } from '../types/Trade';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use environment variable for API URL, fallback to deployed URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://trading-journal-vhrm.onrender.com/api';
 
 interface ApiResponse<T> {
   data?: T;

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from config import Config
 from extensions import db
@@ -16,7 +16,6 @@ def create_app():
              "http://localhost:5173", 
              "http://127.0.0.1:5173", 
              "https://trading-journal-vhrm.onrender.com", 
-             "https://trading-journal-nu-brown.vercel.app",
              "https://trading-journal-nu-brown.vercel.app"
              ],
          supports_credentials=True,
@@ -38,7 +37,18 @@ def create_app():
     # Add CORS preflight handler
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+        # Allow credentials and set appropriate headers for all allowed origins
+        origin = request.headers.get('Origin')
+        allowed_origins = [
+            "http://localhost:3000", 
+            "http://localhost:5173", 
+            "http://127.0.0.1:5173", 
+            "https://trading-journal-vhrm.onrender.com", 
+            "https://trading-journal-nu-brown.vercel.app"
+        ]
+        
+        if origin in allowed_origins:
+            response.headers.add('Access-Control-Allow-Origin', origin)
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
