@@ -34,6 +34,14 @@ def create_app():
     def health_check():
         return {"status": "healthy", "message": "Trading Journal API is running"}
 
+    @app.route('/')
+    def root():
+        return {"message": "Trading Journal API - Use /api/health for health check"}, 200
+
+    @app.route('/api')
+    def api_root():
+        return {"message": "Trading Journal API - Available endpoints: /api/auth, /api/trades, /api/analytics, /api/users"}, 200
+
     # Add CORS preflight handler
     @app.after_request
     def after_request(response):
