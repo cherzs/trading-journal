@@ -3,7 +3,7 @@ import { Login } from './components/Login.jsx';
 import { Register } from './components/Register.jsx';
 import { TradingJournal } from './components/TradingJournal';
 import { User } from './types/Trade';
-import { getCurrentUser } from './utils/auth';
+import { checkAuthStatus, logoutUser } from './utils/auth';
 
 type AuthView = 'login' | 'register';
 
@@ -13,16 +13,23 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    setCurrentUser(user);
-    setIsLoading(false);
+    const checkAuth = async () => {
+      const result = await checkAuthStatus();
+      if (result.success && result.user) {
+        setCurrentUser(result.user);
+      }
+      setIsLoading(false);
+    };
+    
+    checkAuth();
   }, []);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUser();
     setCurrentUser(null);
   };
 

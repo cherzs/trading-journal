@@ -3,7 +3,7 @@ import { UserPlus, Mail, Lock, User, TrendingUp } from 'lucide-react';
 import { registerUser } from '../utils/auth';
 
 export const Register = ({ onSwitchToLogin }) => {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,24 +22,21 @@ export const Register = ({ onSwitchToLogin }) => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
       setIsLoading(false);
       return;
     }
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const registered = registerUser(email, password, name);
+    const result = await registerUser(username, email, password);
     
-    if (registered) {
+    if (result.success) {
       setSuccess(true);
       setTimeout(() => {
         onSwitchToLogin();
       }, 2000);
     } else {
-      setError('An account with this email already exists');
+      setError(result.error || 'Registration failed');
     }
     
     setIsLoading(false);
@@ -79,9 +76,9 @@ export const Register = ({ onSwitchToLogin }) => {
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-300 w-5 h-5" />
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
                   required
                   className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-200"
                 />

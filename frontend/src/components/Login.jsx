@@ -13,15 +13,12 @@ export const Login = ({ onLogin, onSwitchToRegister }) => {
     setError('');
     setIsLoading(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const user = loginUser(email, password);
+    const result = await loginUser(email, password);
     
-    if (user) {
-      onLogin(user);
+    if (result.success && result.user) {
+      onLogin(result.user);
     } else {
-      setError('Invalid email or password');
+      setError(result.error || 'Login failed');
     }
     
     setIsLoading(false);
