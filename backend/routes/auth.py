@@ -3,6 +3,7 @@ from models import User, UserPreference
 from extensions import db
 from functools import wraps
 import re
+from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -35,84 +36,60 @@ def validate_password(password):
 def register():
     data = request.get_json()
     
-    # Validate required fields
-    required_fields = ['username', 'email', 'password']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'error': f'{field} is required'}), 400
+    if not data or not data.get('username') or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Missing required fields'}), 400
     
-    username = data['username'].strip()
-    email = data['email'].strip().lower()
-    password = data['password']
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already registered'}), 400
     
-    # Validate email format
-    if not validate_email(email):
-        return jsonify({'error': 'Invalid email format'}), 400
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'error': 'Username already taken'}), 400
     
-    # Validate password strength
-    is_valid_password, password_message = validate_password(password)
-    if not is_valid_password:
-        return jsonify({'error': password_message}), 400
-    
-    # Check if username already exists
-    if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists'}), 409
-    
-    # Check if email already exists
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already registered'}), 409
-    
-    # Create new user
-    user = User(username=username, email=email)
-    user.set_password(password)
+    user = User(
+        username=data['username'],
+        email=data['email'],
+        password_hash=generate_password_hash(data['password'])
+    )
     
     try:
         db.session.add(user)
         db.session.commit()
-        
-        # Create default preferences for the user
-        preferences = UserPreference(user_id=user.id)
-        db.session.add(preferences)
-        db.session.commit()
-        
-        # Log in the user
         session['user_id'] = user.id
-        
         return jsonify({
             'message': 'User registered successfully',
-            'user': user.to_dict()
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
         }), 201
-        
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to register user'}), 500
+        return jsonify({'error': 'Registration failed'}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     
-    if not data.get('email') or not data.get('password'):
-        return jsonify({'error': 'Email and password are required'}), 400
+    if not data or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Email and password required'}), 400
     
-    email = data['email'].strip().lower()
-    password = data['password']
+    user = User.query.filter_by(email=data['email']).first()
     
-    # Find user by email
-    user = User.query.filter_by(email=email).first()
-    
-    if not user or not user.check_password(password):
+    if user and check_password_hash(user.password_hash, data['password']):
+        session['user_id'] = user.id
+        return jsonify({
+            'message': 'Login successful',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        }), 200
+    else:
         return jsonify({'error': 'Invalid email or password'}), 401
-    
-    # Log in the user
-    session['user_id'] = user.id
-    
-    return jsonify({
-        'message': 'Login successful',
-        'user': user.to_dict()
-    }), 200
 
 @auth_bp.route('/logout', methods=['POST'])
-@login_required
 def logout():
     session.pop('user_id', None)
     return jsonify({'message': 'Logout successful'}), 200
@@ -120,14 +97,17 @@ def logout():
 @auth_bp.route('/me', methods=['GET'])
 @login_required
 def get_current_user():
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    
+    user = User.query.get(session['user_id'])
     if not user:
-        session.pop('user_id', None)
         return jsonify({'error': 'User not found'}), 404
     
-    return jsonify({'user': user.to_dict()}), 200
+    return jsonify({
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email
+        }
+    }), 200
 
 @auth_bp.route('/change-password', methods=['PUT'])
 @login_required
@@ -237,4 +217,24 @@ def delete_account():
         return jsonify({'message': 'Account deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to delete account'}), 500 
+        return jsonify({'error': 'Failed to delete account'}), 500
+
+@auth_bp.route('/status', methods=['GET'])
+def check_auth_status():
+    """Check if user is authenticated without requiring login"""
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if user:
+            return jsonify({
+                'authenticated': True,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }), 200
+    
+    return jsonify({
+        'authenticated': False,
+        'message': 'Not authenticated'
+    }), 200 

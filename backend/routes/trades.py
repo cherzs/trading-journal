@@ -36,29 +36,82 @@ def get_trades():
 def create_trade():
     user_id = session['user_id']
     data = request.get_json()
-    required_fields = ['symbol', 'entry_price', 'exit_price', 'quantity', 'entry_date']
+    
+    # Required fields
+    required_fields = ['symbol', 'entry_price', 'exit_price', 'size', 'date', 'strategy']
     for field in required_fields:
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
+    
+    # Parse date
+    try:
+        trade_date = datetime.fromisoformat(data['date']).date()
+    except:
+        return jsonify({'error': 'Invalid date format'}), 400
+    
+    # Create trade with all possible fields
     trade = Trade(
         user_id=user_id,
         symbol=data['symbol'],
+        trade_type=data.get('trade_type', 'long'),
+        broker=data.get('broker'),
         entry_price=data['entry_price'],
         exit_price=data['exit_price'],
-        quantity=data['quantity'],
-        date=datetime.fromisoformat(data['entry_date']),
-        trade_type=data.get('trade_type', 'long'),
-        strategy=data.get('strategy', ''),
-        notes=data.get('notes', ''),
-        # tags=data.get('tags', [])
+        size=data['size'],
+        stop_loss=data.get('stop_loss'),
+        take_profit=data.get('take_profit'),
+        strategy=data['strategy'],
+        notes=data.get('notes'),
+        screenshot_path=data.get('screenshot_path'),
+        
+        # Risk Management
+        position_size_percent=data.get('position_size_percent'),
+        risk_per_trade=data.get('risk_per_trade'),
+        risk_percent=data.get('risk_percent'),
+        
+        # Market Context
+        market_condition=data.get('market_condition'),
+        volatility_index=data.get('volatility_index'),
+        sector=data.get('sector'),
+        market_sentiment=data.get('market_sentiment'),
+        
+        # Technical Analysis
+        entry_reason=data.get('entry_reason'),
+        exit_reason=data.get('exit_reason'),
+        technical_indicators=data.get('technical_indicators'),
+        chart_patterns=data.get('chart_patterns'),
+        timeframe=data.get('timeframe'),
+        volume_confirmation=data.get('volume_confirmation'),
+        
+        # Emotional & Psychological Tracking
+        emotional_state=data.get('emotional_state'),
+        confidence_level=data.get('confidence_level'),
+        stress_level=data.get('stress_level'),
+        setup_quality=data.get('setup_quality'),
+        execution_quality=data.get('execution_quality'),
+        
+        # Trade Management
+        holding_period=data.get('holding_period'),
+        partial_exits=data.get('partial_exits'),
+        trailing_stop=data.get('trailing_stop', False),
+        breakeven_stop=data.get('breakeven_stop', False),
+        
+        # Lessons & Analysis
+        lessons_learned=data.get('lessons_learned'),
+        what_worked=data.get('what_worked'),
+        what_didnt_work=data.get('what_didnt_work'),
+        next_time_improvements=data.get('next_time_improvements'),
+        
+        date=trade_date
     )
+    
     try:
         db.session.add(trade)
         db.session.commit()
         return jsonify({'message': 'Trade created successfully', 'trade': trade.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to create trade'}), 500
+        return jsonify({'error': f'Failed to create trade: {str(e)}'}), 500
 
 @trades_bp.route('/<int:trade_id>', methods=['GET'])
 @login_required
@@ -76,29 +129,108 @@ def update_trade(trade_id):
     trade = Trade.query.filter_by(id=trade_id, user_id=user_id).first()
     if not trade:
         return jsonify({'error': 'Trade not found'}), 404
+    
     data = request.get_json()
+    
+    # Update basic fields
     if 'symbol' in data:
         trade.symbol = data['symbol']
+    if 'trade_type' in data:
+        trade.trade_type = data['trade_type']
+    if 'broker' in data:
+        trade.broker = data['broker']
     if 'entry_price' in data:
         trade.entry_price = data['entry_price']
     if 'exit_price' in data:
         trade.exit_price = data['exit_price']
-    if 'quantity' in data:
-        trade.quantity = data['quantity']
+    if 'size' in data:
+        trade.size = data['size']
     if 'date' in data:
-        trade.date = datetime.fromisoformat(data['date'])
-    if 'trade_type' in data:
-        trade.trade_type = data['trade_type']
+        try:
+            trade.date = datetime.fromisoformat(data['date']).date()
+        except:
+            return jsonify({'error': 'Invalid date format'}), 400
+    if 'stop_loss' in data:
+        trade.stop_loss = data['stop_loss']
+    if 'take_profit' in data:
+        trade.take_profit = data['take_profit']
     if 'strategy' in data:
         trade.strategy = data['strategy']
     if 'notes' in data:
         trade.notes = data['notes']
+    if 'screenshot_path' in data:
+        trade.screenshot_path = data['screenshot_path']
+    
+    # Update risk management fields
+    if 'position_size_percent' in data:
+        trade.position_size_percent = data['position_size_percent']
+    if 'risk_per_trade' in data:
+        trade.risk_per_trade = data['risk_per_trade']
+    if 'risk_percent' in data:
+        trade.risk_percent = data['risk_percent']
+    
+    # Update market context fields
+    if 'market_condition' in data:
+        trade.market_condition = data['market_condition']
+    if 'volatility_index' in data:
+        trade.volatility_index = data['volatility_index']
+    if 'sector' in data:
+        trade.sector = data['sector']
+    if 'market_sentiment' in data:
+        trade.market_sentiment = data['market_sentiment']
+    
+    # Update technical analysis fields
+    if 'entry_reason' in data:
+        trade.entry_reason = data['entry_reason']
+    if 'exit_reason' in data:
+        trade.exit_reason = data['exit_reason']
+    if 'technical_indicators' in data:
+        trade.technical_indicators = data['technical_indicators']
+    if 'chart_patterns' in data:
+        trade.chart_patterns = data['chart_patterns']
+    if 'timeframe' in data:
+        trade.timeframe = data['timeframe']
+    if 'volume_confirmation' in data:
+        trade.volume_confirmation = data['volume_confirmation']
+    
+    # Update psychological fields
+    if 'emotional_state' in data:
+        trade.emotional_state = data['emotional_state']
+    if 'confidence_level' in data:
+        trade.confidence_level = data['confidence_level']
+    if 'stress_level' in data:
+        trade.stress_level = data['stress_level']
+    if 'setup_quality' in data:
+        trade.setup_quality = data['setup_quality']
+    if 'execution_quality' in data:
+        trade.execution_quality = data['execution_quality']
+    
+    # Update trade management fields
+    if 'holding_period' in data:
+        trade.holding_period = data['holding_period']
+    if 'partial_exits' in data:
+        trade.partial_exits = data['partial_exits']
+    if 'trailing_stop' in data:
+        trade.trailing_stop = data['trailing_stop']
+    if 'breakeven_stop' in data:
+        trade.breakeven_stop = data['breakeven_stop']
+    
+    # Update analysis fields
+    if 'lessons_learned' in data:
+        trade.lessons_learned = data['lessons_learned']
+    if 'what_worked' in data:
+        trade.what_worked = data['what_worked']
+    if 'what_didnt_work' in data:
+        trade.what_didnt_work = data['what_didnt_work']
+    if 'next_time_improvements' in data:
+        trade.next_time_improvements = data['next_time_improvements']
+    
     try:
         db.session.commit()
         return jsonify({'message': 'Trade updated successfully', 'trade': trade.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to update trade'}), 500
+        return jsonify({'error': f'Failed to update trade: {str(e)}'}), 500
 
 @trades_bp.route('/<int:trade_id>', methods=['DELETE'])
 @login_required

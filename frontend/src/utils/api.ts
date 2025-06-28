@@ -1,3 +1,5 @@
+import { Trade, PaginatedTrades } from '../types/Trade';
+
 const API_BASE_URL = 'http://localhost:5000/api';
 
 interface ApiResponse<T> {
@@ -69,7 +71,7 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<ApiResponse<{ user: any }>> {
-    return this.request('/auth/me');
+    return this.request('/auth/status');
   }
 
   async changePassword(passwords: {
@@ -100,56 +102,32 @@ class ApiService {
   }
 
   // Trade endpoints
-  async getTrades(page: number = 1, perPage: number = 10): Promise<ApiResponse<{
-    trades: any[];
-    total: number;
-    pages: number;
-    current_page: number;
-    per_page: number;
-  }>> {
+  async getTrades(page: number = 1, perPage: number = 10): Promise<ApiResponse<PaginatedTrades>> {
     return this.request(`/trades/?page=${page}&per_page=${perPage}`);
   }
 
-  async createTrade(tradeData: {
-    symbol: string;
-    entry_price: number;
-    exit_price: number;
-    quantity: number;
-    entry_date: string;
-    trade_type?: string;
-    strategy?: string;
-    notes?: string;
-  }): Promise<ApiResponse<{ trade: any; message: string }>> {
+  async createTrade(tradeData: Omit<Trade, 'id'>): Promise<ApiResponse<Trade>> {
     return this.request('/trades/', {
       method: 'POST',
       body: JSON.stringify(tradeData),
     });
   }
 
-  async getTrade(tradeId: string): Promise<ApiResponse<{ trade: any }>> {
+  async getTrade(tradeId: number): Promise<ApiResponse<Trade>> {
     return this.request(`/trades/${tradeId}`);
   }
 
   async updateTrade(
-    tradeId: string,
-    tradeData: Partial<{
-      symbol: string;
-      entry_price: number;
-      exit_price: number;
-      quantity: number;
-      date: string;
-      trade_type: string;
-      strategy: string;
-      notes: string;
-    }>
-  ): Promise<ApiResponse<{ trade: any; message: string }>> {
+    tradeId: number,
+    tradeData: Partial<Omit<Trade, 'id'>>
+  ): Promise<ApiResponse<Trade>> {
     return this.request(`/trades/${tradeId}`, {
       method: 'PUT',
       body: JSON.stringify(tradeData),
     });
   }
 
-  async deleteTrade(tradeId: string): Promise<ApiResponse<{ message: string }>> {
+  async deleteTrade(tradeId: number): Promise<ApiResponse<{ message: string }>> {
     return this.request(`/trades/${tradeId}`, {
       method: 'DELETE',
     });
@@ -162,8 +140,8 @@ class ApiService {
     win_rate: number;
     total_pnl: number;
     average_pnl: number;
-    best_trade: any;
-    worst_trade: any;
+    best_trade: Trade | null;
+    worst_trade: Trade | null;
   }>> {
     return this.request('/trades/analytics');
   }
@@ -186,4 +164,46 @@ class ApiService {
   }
 }
 
-export const apiService = new ApiService(); 
+export const apiService = new ApiService();
+
+// Trade API wrapper for easier usage
+export const tradeApi = {
+  async getTrades(page: number = 1, perPage: number = 50): Promise<PaginatedTrades> {
+    const response = await apiService.getTrades(page, perPage);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.data!;
+  },
+
+  async createTrade(tradeData: Omit<Trade, 'id'>): Promise<Trade> {
+    const response = await apiService.createTrade(tradeData);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.data!;
+  },
+
+  async updateTrade(tradeId: number, tradeData: Partial<Omit<Trade, 'id'>>): Promise<Trade> {
+    const response = await apiService.updateTrade(tradeId, tradeData);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.data!;
+  },
+
+  async deleteTrade(tradeId: number): Promise<void> {
+    const response = await apiService.deleteTrade(tradeId);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+  },
+
+  async getTrade(tradeId: number): Promise<Trade> {
+    const response = await apiService.getTrade(tradeId);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.data!;
+  }
+}; 

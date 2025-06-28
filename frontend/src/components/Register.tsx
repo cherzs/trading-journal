@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { UserPlus, Mail, Lock, User, TrendingUp } from 'lucide-react';
 import { registerUser } from '../utils/auth';
 
-export const Register = ({ onSwitchToLogin }) => {
+interface RegisterProps {
+  onSwitchToLogin: () => void;
+}
+
+export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,7 +15,7 @@ export const Register = ({ onSwitchToLogin }) => {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
