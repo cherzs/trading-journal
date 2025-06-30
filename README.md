@@ -41,36 +41,9 @@ trading-journal/
 
 ### Environment Configuration
 
-#### Frontend Environment Variables
-Create a `.env` file in the `frontend/` directory:
-```env
-# API Configuration
-# For production (deployed backend)
-VITE_API_URL=https://trading-journal-vhrm.onrender.com/api
-
-# For local development, uncomment the line below:
-# VITE_API_URL=http://localhost:5000/api
-```
-
 #### Backend Environment Variables
 Create a `.env` file in the root directory:
 ```env
-# Database Configuration
-DB_HOST=akuntansi.cjwyqk8802ox.ap-southeast-2.rds.amazonaws.com
-DB_PORT=5432
-DB_NAME=trading_journal
-DB_USER=postgres
-DB_PASSWORD=your_password_here
-
-# Flask Configuration
-FLASK_APP=app.py
-FLASK_ENV=development
-SECRET_KEY=your_secret_key_here
-JWT_SECRET_KEY=your_jwt_secret_key_here
-
-# Other Configuration
-DEBUG=True
-```
 
 ### Backend Setup
 
@@ -93,21 +66,7 @@ DEBUG=True
 4. **Set up environment variables:**
    Create a `.env` file in the root directory:
    ```env
-   # Database Configuration
-   DB_HOST=akuntansi.cjwyqk8802ox.ap-southeast-2.rds.amazonaws.com
-   DB_PORT=5432
-   DB_NAME=trading_journal
-   DB_USER=postgres
-   DB_PASSWORD=your_password_here
-
-   # Flask Configuration
-   FLASK_APP=app.py
-   FLASK_ENV=development
-   SECRET_KEY=your_secret_key_here
-   JWT_SECRET_KEY=your_jwt_secret_key_here
-
-   # Other Configuration
-   DEBUG=True
+   
    ```
 
 5. **Run the Flask API:**
@@ -137,7 +96,7 @@ DEBUG=True
 ## 🔧 Features
 
 ### Backend (Flask API)
-- ✅ User authentication with JWT
+- ✅ User authentication with Session Id
 - ✅ User registration and login
 - ✅ Trade CRUD operations
 - ✅ Trade statistics and analytics
