@@ -15,7 +15,7 @@ def create_app():
              "http://localhost:3000", 
              "http://localhost:5173", 
              "http://127.0.0.1:5173", 
-             "https://trading-journal-vhrm.onrender.com", 
+             "https://trading-journal-0mup.onrender.com", 
              "https://trading-journal-nu-brown.vercel.app"
              ],
          supports_credentials=True,
@@ -51,7 +51,7 @@ def create_app():
             "http://localhost:3000", 
             "http://localhost:5173", 
             "http://127.0.0.1:5173", 
-            "https://trading-journal-vhrm.onrender.com", 
+            "https://trading-journal-0mup.onrender.com", 
             "https://trading-journal-nu-brown.vercel.app"
         ]
         

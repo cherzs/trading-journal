@@ -64,7 +64,7 @@ export const TradingJournal: React.FC = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://trading-journal-vhrm.onrender.com/api'}/auth/status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://trading-journal-0mup.onrender.com/api'}/auth/status`, {
         credentials: 'include',
       });
       const data = await response.json();
@@ -112,7 +112,7 @@ export const TradingJournal: React.FC = () => {
 
   const fetchPerformance = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://trading-journal-vhrm.onrender.com/api'}/analytics/performance`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://trading-journal-0mup.onrender.com/api'}/analytics/performance`, {
         credentials: 'include',
       });
       const data = await response.json();
