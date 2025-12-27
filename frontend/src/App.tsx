@@ -58,13 +58,13 @@ function App() {
 
   // If user is authenticated, show the trading journal
   if (currentUser) {
-    return <TradingJournal />;
+    return <TradingJournal currentUser={currentUser} onLogout={handleLogout} />;
   }
 
   // Show different views based on authView state
   if (authView === 'landing') {
     return (
-      <LandingPage 
+      <LandingPage
         onGetStarted={handleGetStarted}
         onLogin={handleGoToLogin}
       />
@@ -73,17 +73,17 @@ function App() {
 
   if (authView === 'login') {
     return (
-      <Login 
-        onLogin={handleLogin} 
-        onSwitchToRegister={() => setAuthView('register')} 
+      <Login
+        onLogin={handleLogin}
+        onSwitchToRegister={() => setAuthView('register')}
         onBack={() => setAuthView('landing')}
       />
     );
   }
 
   return (
-    <Register 
-      onSwitchToLogin={() => setAuthView('login')} 
+    <Register
+      onSwitchToLogin={() => setAuthView('login')}
       onBack={() => setAuthView('landing')}
     />
   );

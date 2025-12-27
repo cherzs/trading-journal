@@ -15,7 +15,12 @@ import { tradeApi } from '../utils/api';
 import { analyticsUtils } from '../utils/analytics';
 import { logoutUser } from '../utils/auth';
 
-export const TradingJournal: React.FC = () => {
+interface TradingJournalProps {
+  currentUser?: any;
+  onLogout?: () => void;
+}
+
+export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: propUser, onLogout }) => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -32,12 +37,18 @@ export const TradingJournal: React.FC = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [performance, setPerformance] = useState<any>(null);
   const [showProfile, setShowProfile] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(propUser || null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    if (propUser) {
+      setCurrentUser(propUser);
+      setIsAuthenticated(true);
+      setLoading(false);
+    } else {
+      checkAuthStatus();
+    }
+  }, [propUser]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -209,15 +220,19 @@ export const TradingJournal: React.FC = () => {
 
   const totalPnL = trades.filter(trade => trade && typeof trade.profit_loss === 'number').reduce((sum, trade) => sum + trade.profit_loss, 0);
   const winningTrades = trades.filter(trade => trade && trade.is_winning_trade);
-  const losingTrades = trades.filter(trade => trade && !trade.is_winning_trade);
+
   const winRate = trades.length > 0 ? (winningTrades.length / trades.length) * 100 : 0;
 
   const handleLogout = async () => {
     try {
-      await logoutUser();
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-      setAuthError('Please log in to access the trading journal');
+      if (onLogout) {
+        onLogout();
+      } else {
+        await logoutUser();
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setAuthError('Please log in to access the trading journal');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
