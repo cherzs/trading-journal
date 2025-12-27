@@ -6,6 +6,9 @@ from functools import wraps
 
 trades_bp = Blueprint('trades', __name__)
 
+import os
+import csv
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -280,4 +283,69 @@ def get_analytics():
         'average_pnl': round(average_pnl, 2),
         'best_trade': best_trade.to_dict() if best_trade else None,
         'worst_trade': worst_trade.to_dict() if worst_trade else None
-    }), 200 
+    }), 200
+
+@trades_bp.route('/seed', methods=['POST'])
+@login_required
+def import_demo_data():
+    user_id = session['user_id']
+    
+    # Path to the CSV file
+    # backend/routes/trades.py -> ... -> Project Root -> data/trades.csv
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    csv_path = os.path.join(base_dir, 'data', 'trades.csv')
+    
+    if not os.path.exists(csv_path):
+        return jsonify({'error': f'Demo data file not found at {csv_path}'}), 404
+        
+    try:
+        added_count = 0
+        with open(csv_path, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    # Handle date parsing
+                    date_str = row.get('date', '')
+                    if not date_str:
+                        trade_date = datetime.now().date()
+                    else:
+                        try:
+                            trade_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                        except ValueError:
+                            trade_date = datetime.now().date()
+                    
+                    # Essential fields with defaults
+                    trade = Trade(
+                        user_id=user_id,
+                        date=trade_date,
+                        symbol=row.get('symbol', 'UNKNOWN'),
+                        trade_type=row.get('trade_type', 'long'),
+                        entry_price=float(row.get('entry_price', 0)),
+                        exit_price=float(row.get('exit_price', 0)),
+                        size=float(row.get('size', 0)),
+                        strategy=row.get('strategy', 'Demo'),
+                        notes=row.get('notes', 'Imported demo trade'),
+                        
+                        # Optional fields
+                        stop_loss=float(row['stop_loss']) if row.get('stop_loss') else None,
+                        take_profit=float(row['take_profit']) if row.get('take_profit') else None,
+                        
+                        # Map other fields if they exist in CSV
+                        market_condition=row.get('market_condition'),
+                        emotional_state=int(row['emotional_state']) if row.get('emotional_state') else None,
+                        entry_reason=row.get('entry_reason'),
+                        exit_reason=row.get('exit_reason')
+                    )
+                    
+                    db.session.add(trade)
+                    added_count += 1
+                except Exception as row_error:
+                    print(f"Error skipping row: {row_error}")
+                    continue
+                
+        db.session.commit()
+        return jsonify({'message': f'Successfully imported {added_count} demo trades'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to import demo data: {str(e)}'}), 500 

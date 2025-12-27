@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp } from 'lucide-react';
+import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp, Database } from 'lucide-react';
 import { Trade } from '../types/Trade';
 import { TradeForm } from './TradeForm';
 import { TradeList } from './TradeList';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
-import { ScreenshotUpload } from './ScreenshotUpload';
+
 import { TradeTemplates } from './TradeTemplates';
 import { AdvancedFilters } from './AdvancedFilters';
 import { GoalsTracker } from './GoalsTracker';
@@ -87,7 +87,7 @@ export const TradingJournal: React.FC = () => {
       setLoading(true);
       const response = await tradeApi.getTrades();
       const tradesData = response.trades || [];
-      
+
       // Filter out invalid trades
       const validTrades = tradesData.filter(trade => {
         if (!trade) {
@@ -100,7 +100,7 @@ export const TradingJournal: React.FC = () => {
         }
         return true;
       });
-      
+
       setTrades(validTrades);
     } catch (error) {
       console.error('Failed to fetch trades:', error);
@@ -135,7 +135,7 @@ export const TradingJournal: React.FC = () => {
 
   const handleUpdateTrade = async (trade: Omit<Trade, 'id'>) => {
     if (!editingTrade) return;
-    
+
     try {
       const updatedTrade = await tradeApi.updateTrade(editingTrade.id, trade);
       setTrades(prev => prev.map(t => t.id === editingTrade.id ? updatedTrade : t));
@@ -187,23 +187,23 @@ export const TradingJournal: React.FC = () => {
     if (!trade || !trade.symbol || !trade.strategy) {
       return false;
     }
-    
+
     // Ensure searchTerm is a string
     const searchLower = (searchTerm || '').toLowerCase();
-    
+
     const matchesSearch = trade.symbol.toLowerCase().includes(searchLower) ||
-                         trade.strategy.toLowerCase().includes(searchLower) ||
-                         (trade.notes && trade.notes.toLowerCase().includes(searchLower));
-    
+      trade.strategy.toLowerCase().includes(searchLower) ||
+      (trade.notes && trade.notes.toLowerCase().includes(searchLower));
+
     const matchesStrategy = !filterStrategy || trade.strategy === filterStrategy;
     const matchesType = filterType === 'all' || trade.trade_type === filterType;
-    const matchesResult = filterResult === 'all' || 
-                         (filterResult === 'win' && trade.is_winning_trade) ||
-                         (filterResult === 'loss' && !trade.is_winning_trade);
-    
+    const matchesResult = filterResult === 'all' ||
+      (filterResult === 'win' && trade.is_winning_trade) ||
+      (filterResult === 'loss' && !trade.is_winning_trade);
+
     const matchesDateRange = (!dateRange.start || trade.date >= dateRange.start) &&
-                            (!dateRange.end || trade.date <= dateRange.end);
-    
+      (!dateRange.end || trade.date <= dateRange.end);
+
     return matchesSearch && matchesStrategy && matchesType && matchesResult && matchesDateRange;
   });
 
@@ -225,6 +225,23 @@ export const TradingJournal: React.FC = () => {
 
   const handleProfileClose = () => {
     setShowProfile(false);
+  };
+
+  const handleAddDemoData = async () => {
+    try {
+      setLoading(true);
+      await tradeApi.importDemoData();
+      await fetchTrades();
+      await fetchPerformance();
+      // Optional: Show a toast notification instead of alert
+      // alert('Demo data added successfully!');
+    } catch (error) {
+      console.error('Failed to add demo data:', error);
+      // alert('Failed to add demo data');
+    } finally {
+      setLoading(false);
+      setShowUserMenu(false);
+    }
   };
 
   // Show authentication error or loading state
@@ -317,6 +334,13 @@ export const TradingJournal: React.FC = () => {
                     <span>Profile Settings</span>
                   </button>
                   <button
+                    onClick={handleAddDemoData}
+                    className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <Database className="w-4 h-4" />
+                    <span>Add Demo Data</span>
+                  </button>
+                  <button
                     onClick={() => {
                       handleLogout();
                       setShowUserMenu(false);
@@ -385,11 +409,10 @@ export const TradingJournal: React.FC = () => {
             <nav className="-mb-px flex space-x-8 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('trades')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'trades'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'trades'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -398,11 +421,10 @@ export const TradingJournal: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('analytics')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'analytics'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'analytics'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
@@ -411,11 +433,10 @@ export const TradingJournal: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('templates')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'templates'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'templates'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
@@ -424,11 +445,10 @@ export const TradingJournal: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('goals')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'goals'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'goals'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4" />
@@ -437,11 +457,10 @@ export const TradingJournal: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('risk')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'risk'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'risk'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4" />
@@ -450,11 +469,10 @@ export const TradingJournal: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('export')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === 'export'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'export'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Download className="w-4 h-4" />
@@ -539,7 +557,7 @@ export const TradingJournal: React.FC = () => {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <AdvancedFilters
                   onApplyFilters={handleAdvancedFilters}
-                  onClearFilters={() => {}}
+                  onClearFilters={() => { }}
                   strategies={strategies}
                   symbols={symbols}
                 />
@@ -594,8 +612,8 @@ export const TradingJournal: React.FC = () => {
         {activeTab === 'templates' && (
           <TradeTemplates
             onSelectTemplate={handleTemplateSelect}
-            onSaveTemplate={() => {}}
-            onDeleteTemplate={() => {}}
+            onSaveTemplate={() => { }}
+            onDeleteTemplate={() => { }}
             currentTrade={editingTrade}
           />
         )}

@@ -15,7 +15,7 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -163,6 +163,12 @@ class ApiService {
       body: JSON.stringify(preferences),
     });
   }
+
+  async importDemoData(): Promise<ApiResponse<{ message: string }>> {
+    return this.request('/trades/seed', {
+      method: 'POST',
+    });
+  }
 }
 
 export const apiService = new ApiService();
@@ -206,5 +212,12 @@ export const tradeApi = {
       throw new Error(response.error);
     }
     return response.data!;
+  },
+
+  async importDemoData(): Promise<void> {
+    const response = await apiService.importDemoData();
+    if (response.error) {
+      throw new Error(response.error);
+    }
   }
 }; 
