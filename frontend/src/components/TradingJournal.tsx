@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp, Database, LayoutGrid, List, Moon, Sun } from 'lucide-react';
+import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp, Database, LayoutGrid, List, Moon, Sun, Book } from 'lucide-react';
 import { Trade } from '../types/Trade';
 import { TradeForm } from './TradeForm';
 import { TradeList } from './TradeList';
@@ -12,6 +12,7 @@ import { GoalsTracker } from './GoalsTracker';
 import { RiskManagement } from './RiskManagement';
 import { ExportReports } from './ExportReports';
 import { Profile } from './Profile';
+import { DocumentationModal } from './DocumentationModal';
 import { tradeApi } from '../utils/api';
 import { analyticsUtils } from '../utils/analytics';
 import { logoutUser } from '../utils/auth';
@@ -42,6 +43,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
   const [currentUser, setCurrentUser] = useState<any>(propUser || null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [showDocs, setShowDocs] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -328,6 +330,15 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
+              {/* Documentation Button */}
+              <button
+                onClick={() => setShowDocs(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-all"
+                title="Documentation"
+              >
+                <Book className="w-5 h-5" />
+              </button>
+
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -594,7 +605,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 gap-4">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Showing {filteredTrades.length} of {trades.length} trades
                 </div>
@@ -719,6 +730,13 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
             user={currentUser}
             onLogout={handleLogout}
             onClose={handleProfileClose}
+          />
+        )}
+
+        {/* Documentation Modal */}
+        {showDocs && (
+          <DocumentationModal
+            onClose={() => setShowDocs(false)}
           />
         )}
       </div>
