@@ -325,6 +325,7 @@ def import_demo_data():
                         size=float(row.get('size', 0)),
                         strategy=row.get('strategy', 'Demo'),
                         notes=row.get('notes', 'Imported demo trade'),
+                        screenshot_path=row.get('screenshot'),
                         
                         # Optional fields
                         stop_loss=float(row['stop_loss']) if row.get('stop_loss') else None,

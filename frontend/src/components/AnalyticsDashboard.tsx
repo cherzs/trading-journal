@@ -100,62 +100,62 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     <div className="space-y-6">
       {/* Performance Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total P&L</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total P&L</p>
               <p className={`text-2xl font-bold ${analyticsUtils.getPnLColor(performance.total_pnl)}`}>
                 {analyticsUtils.formatCurrency(performance.total_pnl)}
               </p>
             </div>
             <div className={`p-3 rounded-full ${analyticsUtils.getPnLBackgroundColor(performance.total_pnl)}`}>
               {performance.total_pnl >= 0 ? (
-                <TrendingUp className="w-6 h-6 text-green-600" />
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
               ) : (
-                <TrendingDown className="w-6 h-6 text-red-600" />
+                <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Win Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Win Rate</p>
               <p className={`text-2xl font-bold ${analyticsUtils.getWinRateColor(performance.win_rate)}`}>
                 {analyticsUtils.formatPercentage(performance.win_rate)}
               </p>
             </div>
-            <div className="p-3 rounded-full bg-blue-50">
-              <Target className="w-6 h-6 text-blue-600" />
+            <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
+              <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Trades</p>
-              <p className="text-2xl font-bold text-gray-900">{performance.total_trades}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Trades</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{performance.total_trades}</p>
             </div>
-            <div className="p-3 rounded-full bg-purple-50">
-              <Activity className="w-6 h-6 text-purple-600" />
+            <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
+              <Activity className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Profit Factor</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Profit Factor</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {typeof performance.profit_factor === 'number' && isFinite(performance.profit_factor)
                   ? performance.profit_factor.toFixed(2)
                   : performance.profit_factor === Infinity ? '∞' : '-'}
               </p>
             </div>
-            <div className="p-3 rounded-full bg-green-50">
-              <Zap className="w-6 h-6 text-green-600" />
+            <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/30">
+              <Zap className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
@@ -164,45 +164,45 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Main Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Equity Curve */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
             Equity Curve
           </h3>
           {equityCurve.length > 0 ? (
             <EquityChart data={equityCurve} />
           ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
               No trade data to display chart
             </div>
           )}
         </div>
 
         {/* Monthly Performance */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             Monthly Performance
           </h3>
           {monthlyData ? (
             <MonthlyChart data={monthlyData} />
           ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
               No monthly data available
             </div>
           )}
         </div>
 
         {/* Strategy Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-5 h-5" />
             Strategy Distribution (Volume)
           </h3>
           {strategyStats && Object.keys(strategyStats).length > 0 ? (
             <StrategyChart data={strategyStats} />
           ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
               No strategy data available
             </div>
           )}
@@ -212,41 +212,41 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Detailed Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Trade Statistics */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             Trade Statistics
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Winning Trades</span>
-              <span className="font-medium text-green-600">{performance.winning_trades}</span>
+              <span className="text-gray-600 dark:text-gray-400">Winning Trades</span>
+              <span className="font-medium text-green-600 dark:text-green-400">{performance.winning_trades}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Losing Trades</span>
-              <span className="font-medium text-red-600">{performance.losing_trades}</span>
+              <span className="text-gray-600 dark:text-gray-400">Losing Trades</span>
+              <span className="font-medium text-red-600 dark:text-red-400">{performance.losing_trades}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Average Win</span>
-              <span className="font-medium text-green-600">
+              <span className="text-gray-600 dark:text-gray-400">Average Win</span>
+              <span className="font-medium text-green-600 dark:text-green-400">
                 {analyticsUtils.formatCurrency(performance.average_win)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Average Loss</span>
-              <span className="font-medium text-red-600">
+              <span className="text-gray-600 dark:text-gray-400">Average Loss</span>
+              <span className="font-medium text-red-600 dark:text-red-400">
                 {analyticsUtils.formatCurrency(performance.average_loss)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Largest Win</span>
-              <span className="font-medium text-green-600">
+              <span className="text-gray-600 dark:text-gray-400">Largest Win</span>
+              <span className="font-medium text-green-600 dark:text-green-400">
                 {analyticsUtils.formatCurrency(performance.largest_win)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Largest Loss</span>
-              <span className="font-medium text-red-600">
+              <span className="text-gray-600 dark:text-gray-400">Largest Loss</span>
+              <span className="font-medium text-red-600 dark:text-red-400">
                 {analyticsUtils.formatCurrency(performance.largest_loss)}
               </span>
             </div>
@@ -254,39 +254,39 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         {/* Risk Metrics */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5" />
             Risk Analysis
           </h3>
           {riskMetrics && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Max Drawdown</span>
-                <span className="font-medium text-red-600">
+                <span className="text-gray-600 dark:text-gray-400">Max Drawdown</span>
+                <span className="font-medium text-red-600 dark:text-red-400">
                   {analyticsUtils.formatCurrency(performance.max_drawdown)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Drawdown %</span>
-                <span className="font-medium text-red-600">
+                <span className="text-gray-600 dark:text-gray-400">Drawdown %</span>
+                <span className="font-medium text-red-600 dark:text-red-400">
                   {analyticsUtils.formatPercentage(performance.max_drawdown_percent)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Expectancy</span>
+                <span className="text-gray-600 dark:text-gray-400">Expectancy</span>
                 <span className={`font-medium ${analyticsUtils.getPnLColor(performance.expectancy)}`}>
                   {analyticsUtils.formatCurrency(performance.expectancy)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Volatility</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-600 dark:text-gray-400">Volatility</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   {analyticsUtils.formatCurrency(riskMetrics.volatility)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Risk Efficiency</span>
+                <span className="text-gray-600 dark:text-gray-400">Risk Efficiency</span>
                 <span className={`font-medium ${analyticsUtils.getPnLColor(riskMetrics.risk_efficiency)}`}>
                   {typeof riskMetrics.risk_efficiency === 'number' && isFinite(riskMetrics.risk_efficiency)
                     ? riskMetrics.risk_efficiency.toFixed(2)
@@ -294,8 +294,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Avg Risk Per Trade</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-600 dark:text-gray-400">Avg Risk Per Trade</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   {analyticsUtils.formatCurrency(riskMetrics.avg_risk_per_trade)}
                 </span>
               </div>
@@ -305,69 +305,69 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
 
       {/* Streak Analysis */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Award className="w-5 h-5" />
           Streak Analysis
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{performance.longest_winning_streak}</div>
-            <div className="text-sm text-gray-600">Longest Winning Streak</div>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{performance.longest_winning_streak}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Longest Winning Streak</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-red-600">{performance.longest_losing_streak}</div>
-            <div className="text-sm text-gray-600">Longest Losing Streak</div>
+            <div className="text-3xl font-bold text-red-600 dark:text-red-400">{performance.longest_losing_streak}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Longest Losing Streak</div>
           </div>
           <div className="text-center">
-            <div className={`text-3xl font-bold ${performance.current_streak_type === 'winning' ? 'text-green-600' :
-              performance.current_streak_type === 'losing' ? 'text-red-600' : 'text-gray-600'
+            <div className={`text-3xl font-bold ${performance.current_streak_type === 'winning' ? 'text-green-600 dark:text-green-400' :
+              performance.current_streak_type === 'losing' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
               }`}>
               {performance.current_streak}
             </div>
-            <div className="text-sm text-gray-600">Current Streak ({performance.current_streak_type})</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Current Streak ({performance.current_streak_type})</div>
           </div>
         </div>
       </div>
 
       {/* Strategy Performance Details Table */}
       {strategyStats && Object.keys(strategyStats).length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-5 h-5" />
             Strategy Performance Details
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Strategy</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">Trades</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">Win Rate</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">P&L</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">Avg Win</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">Avg Loss</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-900">Profit Factor</th>
+                <tr className="border-b border-gray-200 dark:border-slate-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Strategy</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Trades</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Win Rate</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">P&L</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Avg Win</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Avg Loss</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Profit Factor</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(strategyStats).map(([strategy, stats]) => (
-                  <tr key={strategy} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900">{strategy}</td>
-                    <td className="py-3 px-4 text-right text-gray-600">{stats.total_trades}</td>
+                  <tr key={strategy} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors">
+                    <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{strategy}</td>
+                    <td className="py-3 px-4 text-right text-gray-600 dark:text-gray-400">{stats.total_trades}</td>
                     <td className={`py-3 px-4 text-right font-medium ${analyticsUtils.getWinRateColor(stats.win_rate)}`}>
                       {analyticsUtils.formatPercentage(stats.win_rate)}
                     </td>
                     <td className={`py-3 px-4 text-right font-medium ${analyticsUtils.getPnLColor(stats.total_pnl)}`}>
                       {analyticsUtils.formatCurrency(stats.total_pnl)}
                     </td>
-                    <td className="py-3 px-4 text-right text-green-600">
+                    <td className="py-3 px-4 text-right text-green-600 dark:text-green-400">
                       {analyticsUtils.formatCurrency(stats.average_win)}
                     </td>
-                    <td className="py-3 px-4 text-right text-red-600">
+                    <td className="py-3 px-4 text-right text-red-600 dark:text-red-400">
                       {analyticsUtils.formatCurrency(stats.average_loss)}
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-600">
+                    <td className="py-3 px-4 text-right text-gray-600 dark:text-gray-400">
                       {typeof stats.profit_factor === 'number' && isFinite(stats.profit_factor)
                         ? stats.profit_factor.toFixed(2)
                         : stats.profit_factor === Infinity ? '∞' : '-'}

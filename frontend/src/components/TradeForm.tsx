@@ -20,20 +20,20 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
     exit_price: '',
     size: '',
     date: '',
-    
+
     // Risk Management
     stop_loss: '',
     take_profit: '',
     position_size_percent: '',
     risk_per_trade: '',
     risk_percent: '',
-    
+
     // Market Context
     market_condition: '' as 'bull' | 'bear' | 'sideways' | '',
     volatility_index: '',
     sector: '',
     market_sentiment: '' as 'bullish' | 'bearish' | 'neutral' | '',
-    
+
     // Technical Analysis
     strategy: '',
     entry_reason: '',
@@ -42,19 +42,19 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
     chart_patterns: '',
     timeframe: '',
     volume_confirmation: false,
-    
+
     // Emotional & Psychological
     emotional_state: '',
     confidence_level: '',
     stress_level: '',
     setup_quality: '',
     execution_quality: '',
-    
+
     // Trade Management
     holding_period: '',
     trailing_stop: false,
     breakeven_stop: false,
-    
+
     // Analysis & Lessons
     notes: '',
     lessons_learned: '',
@@ -131,7 +131,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
   const handleScreenshotUpload = async (file: File) => {
     setScreenshotFile(file);
     setUploadingScreenshot(true);
-    
+
     try {
       const result = await uploadApi.uploadScreenshot(file);
       setScreenshotPath(result.filename);
@@ -150,7 +150,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Upload screenshot if there's a new file
     let finalScreenshotPath = screenshotPath;
     if (screenshotFile && !screenshotPath) {
@@ -163,7 +163,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
         return;
       }
     }
-    
+
     const trade: Omit<Trade, 'id'> = {
       user_id: 0, // Will be set by backend
       symbol: formData.symbol.toUpperCase(),
@@ -220,30 +220,30 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
     <button
       type="button"
       onClick={() => toggleSection(section)}
-      className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+      className="flex items-center justify-between w-full p-4 bg-gray-50 dark:bg-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors"
     >
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
       {expandedSections[section] ? (
-        <ChevronUp className="w-5 h-5 text-gray-500" />
+        <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
       ) : (
-        <ChevronDown className="w-5 h-5 text-gray-500" />
+        <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
       )}
     </button>
   );
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {editingTrade ? <Save className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
             {editingTrade ? 'Edit Trade' : 'Add New Trade'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
-            <X className="w-6 h-6 text-gray-500" />
+            <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
@@ -255,27 +255,27 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Symbol *
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.symbol}
-                      onChange={(e) => setFormData({...formData, symbol: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="AAPL"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Trade Type *
                     </label>
                     <select
                       required
                       value={formData.trade_type}
-                      onChange={(e) => setFormData({...formData, trade_type: e.target.value as 'long' | 'short'})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, trade_type: e.target.value as 'long' | 'short' })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="long">Long</option>
                       <option value="short">Short</option>
@@ -285,7 +285,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Entry Price *
                     </label>
                     <input
@@ -293,13 +293,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       required
                       step="0.01"
                       value={formData.entry_price}
-                      onChange={(e) => setFormData({...formData, entry_price: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, entry_price: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="150.00"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Exit Price *
                     </label>
                     <input
@@ -307,13 +307,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       required
                       step="0.01"
                       value={formData.exit_price}
-                      onChange={(e) => setFormData({...formData, exit_price: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, exit_price: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="155.00"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Size *
                     </label>
                     <input
@@ -321,8 +321,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       required
                       step="0.01"
                       value={formData.size}
-                      onChange={(e) => setFormData({...formData, size: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="100"
                     />
                   </div>
@@ -330,26 +330,26 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Date *
                     </label>
                     <input
                       type="date"
                       required
                       value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Broker
                     </label>
                     <input
                       type="text"
                       value={formData.broker}
-                      onChange={(e) => setFormData({...formData, broker: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, broker: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="Interactive Brokers"
                     />
                   </div>
@@ -380,28 +380,28 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Stop Loss
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.stop_loss}
-                      onChange={(e) => setFormData({...formData, stop_loss: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, stop_loss: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="145.00"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Take Profit
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.take_profit}
-                      onChange={(e) => setFormData({...formData, take_profit: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, take_profit: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="160.00"
                     />
                   </div>
@@ -409,41 +409,41 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Position Size (%)
                     </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.position_size_percent}
-                      onChange={(e) => setFormData({...formData, position_size_percent: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, position_size_percent: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="5.0"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Risk Per Trade ($)
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.risk_per_trade}
-                      onChange={(e) => setFormData({...formData, risk_per_trade: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, risk_per_trade: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="100.00"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Risk (%)
                     </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.risk_percent}
-                      onChange={(e) => setFormData({...formData, risk_percent: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, risk_percent: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="1.0"
                     />
                   </div>
@@ -459,13 +459,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Market Condition
                     </label>
                     <select
                       value={formData.market_condition}
-                      onChange={(e) => setFormData({...formData, market_condition: e.target.value as any})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, market_condition: e.target.value as any })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="">Select condition</option>
                       <option value="bull">Bull Market</option>
@@ -474,13 +474,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Market Sentiment
                     </label>
                     <select
                       value={formData.market_sentiment}
-                      onChange={(e) => setFormData({...formData, market_sentiment: e.target.value as any})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, market_sentiment: e.target.value as any })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="">Select sentiment</option>
                       <option value="bullish">Bullish</option>
@@ -492,27 +492,27 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Volatility Index
                     </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.volatility_index}
-                      onChange={(e) => setFormData({...formData, volatility_index: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, volatility_index: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="25.5"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Sector
                     </label>
                     <input
                       type="text"
                       value={formData.sector}
-                      onChange={(e) => setFormData({...formData, sector: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="Technology"
                     />
                   </div>
@@ -527,41 +527,41 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
             {expandedSections.technical && (
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Strategy *
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.strategy}
-                    onChange={(e) => setFormData({...formData, strategy: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, strategy: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="Breakout Strategy"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Entry Reason
                     </label>
                     <input
                       type="text"
                       value={formData.entry_reason}
-                      onChange={(e) => setFormData({...formData, entry_reason: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, entry_reason: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="Breakout above resistance"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Exit Reason
                     </label>
                     <input
                       type="text"
                       value={formData.exit_reason}
-                      onChange={(e) => setFormData({...formData, exit_reason: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, exit_reason: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="Target reached"
                     />
                   </div>
@@ -569,26 +569,26 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Technical Indicators
                     </label>
                     <input
                       type="text"
                       value={formData.technical_indicators}
-                      onChange={(e) => setFormData({...formData, technical_indicators: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, technical_indicators: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="RSI, MACD, Moving Averages"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Chart Patterns
                     </label>
                     <input
                       type="text"
                       value={formData.chart_patterns}
-                      onChange={(e) => setFormData({...formData, chart_patterns: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, chart_patterns: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="Cup and Handle"
                     />
                   </div>
@@ -596,13 +596,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Timeframe
                     </label>
                     <select
                       value={formData.timeframe}
-                      onChange={(e) => setFormData({...formData, timeframe: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, timeframe: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="">Select timeframe</option>
                       <option value="1m">1 minute</option>
@@ -618,10 +618,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       <input
                         type="checkbox"
                         checked={formData.volume_confirmation}
-                        onChange={(e) => setFormData({...formData, volume_confirmation: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, volume_confirmation: e.target.checked })}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Volume Confirmation</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Volume Confirmation</span>
                     </label>
                   </div>
                 </div>
@@ -636,7 +636,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Emotional State (1-10)
                     </label>
                     <input
@@ -644,13 +644,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       min="1"
                       max="10"
                       value={formData.emotional_state}
-                      onChange={(e) => setFormData({...formData, emotional_state: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, emotional_state: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="7"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Confidence Level (1-10)
                     </label>
                     <input
@@ -658,8 +658,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       min="1"
                       max="10"
                       value={formData.confidence_level}
-                      onChange={(e) => setFormData({...formData, confidence_level: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, confidence_level: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="8"
                     />
                   </div>
@@ -667,7 +667,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Stress Level (1-10)
                     </label>
                     <input
@@ -675,13 +675,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       min="1"
                       max="10"
                       value={formData.stress_level}
-                      onChange={(e) => setFormData({...formData, stress_level: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, stress_level: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="3"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Setup Quality (1-10)
                     </label>
                     <input
@@ -689,13 +689,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       min="1"
                       max="10"
                       value={formData.setup_quality}
-                      onChange={(e) => setFormData({...formData, setup_quality: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, setup_quality: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="9"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Execution Quality (1-10)
                     </label>
                     <input
@@ -703,8 +703,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       min="1"
                       max="10"
                       value={formData.execution_quality}
-                      onChange={(e) => setFormData({...formData, execution_quality: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, execution_quality: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="8"
                     />
                   </div>
@@ -712,14 +712,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Holding Period (hours)
                     </label>
                     <input
                       type="number"
                       value={formData.holding_period}
-                      onChange={(e) => setFormData({...formData, holding_period: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, holding_period: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="24"
                     />
                   </div>
@@ -728,19 +728,19 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
                       <input
                         type="checkbox"
                         checked={formData.trailing_stop}
-                        onChange={(e) => setFormData({...formData, trailing_stop: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, trailing_stop: e.target.checked })}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Trailing Stop</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Trailing Stop</span>
                     </label>
                     <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={formData.breakeven_stop}
-                        onChange={(e) => setFormData({...formData, breakeven_stop: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, breakeven_stop: e.target.checked })}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Breakeven Stop</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Breakeven Stop</span>
                     </label>
                   </div>
                 </div>
@@ -754,67 +754,67 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
             {expandedSections.analysis && (
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Notes
                   </label>
                   <textarea
                     rows={3}
                     value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="General notes about the trade..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Lessons Learned
                   </label>
                   <textarea
                     rows={3}
                     value={formData.lessons_learned}
-                    onChange={(e) => setFormData({...formData, lessons_learned: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, lessons_learned: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="What did you learn from this trade?"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       What Worked
                     </label>
                     <textarea
                       rows={3}
                       value={formData.what_worked}
-                      onChange={(e) => setFormData({...formData, what_worked: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, what_worked: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="What aspects of the trade worked well?"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       What Didn't Work
                     </label>
                     <textarea
                       rows={3}
                       value={formData.what_didnt_work}
-                      onChange={(e) => setFormData({...formData, what_didnt_work: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => setFormData({ ...formData, what_didnt_work: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                       placeholder="What aspects could have been better?"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Next Time Improvements
                   </label>
                   <textarea
                     rows={3}
                     value={formData.next_time_improvements}
-                    onChange={(e) => setFormData({...formData, next_time_improvements: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, next_time_improvements: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="What would you do differently next time?"
                   />
                 </div>
@@ -823,11 +823,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({ onSubmit, onClose, editing
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-slate-700 sticky bottom-0 bg-white dark:bg-slate-800 p-4 -mx-6 -mb-6 rounded-b-2xl">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
             >
               Cancel
             </button>

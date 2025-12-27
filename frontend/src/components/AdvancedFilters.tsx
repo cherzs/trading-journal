@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Plus, Save, Trash2, Search, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { Filter, Plus, Save, Trash2 } from 'lucide-react';
 
 interface FilterCondition {
   field: string;
@@ -135,7 +135,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
   const renderValueInput = (condition: FilterCondition, index: number) => {
     const fieldType = getFieldType(condition.field);
-    
+
     switch (fieldType) {
       case 'select':
         if (condition.field === 'symbol') {
@@ -207,7 +207,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           );
         }
         break;
-      
+
       case 'boolean':
         return (
           <select
@@ -220,7 +220,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <option value="false">False</option>
           </select>
         );
-      
+
       case 'date':
         return (
           <input
@@ -230,7 +230,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         );
-      
+
       case 'number':
         return (
           <input
@@ -242,14 +242,14 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             placeholder="Enter value"
           />
         );
-      
+
       default:
         return (
           <input
             type="text"
             value={condition.value as string}
             onChange={(e) => updateCondition(index, 'value', e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
             placeholder="Enter value"
           />
         );
@@ -288,7 +288,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
         >
           <Filter className="w-4 h-4" />
           Advanced Filters
@@ -298,7 +298,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             </span>
           )}
         </button>
-        
+
         {conditions.length > 0 && (
           <div className="flex gap-2">
             <button
@@ -312,7 +312,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 setConditions([]);
                 onClearFilters();
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
             >
               Clear All
             </button>
@@ -330,17 +330,17 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 {savedFilters.map(filter => (
                   <div
                     key={filter.id}
-                    className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg"
+                    className="flex items-center gap-2 bg-gray-100 dark:bg-slate-700 px-3 py-1 rounded-lg"
                   >
                     <button
                       onClick={() => handleLoadFilter(filter)}
-                      className="text-sm text-gray-700 hover:text-blue-600"
+                      className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                     >
                       {filter.name}
                     </button>
                     <button
                       onClick={() => handleDeleteFilter(filter.id)}
-                      className="text-gray-400 hover:text-red-600"
+                      className="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -353,11 +353,11 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           {/* Filter Conditions */}
           <div className="space-y-3">
             {conditions.map((condition, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                 <select
                   value={condition.field}
                   onChange={(e) => updateCondition(index, 'field', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                 >
                   {FILTER_FIELDS.map(field => (
                     <option key={field.value} value={field.value}>
@@ -369,7 +369,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <select
                   value={condition.operator}
                   onChange={(e) => updateCondition(index, 'operator', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                 >
                   {getOperators(condition.field).map(op => (
                     <option key={op.value} value={op.value}>
@@ -384,7 +384,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
                 <button
                   onClick={() => removeCondition(index)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -416,20 +416,20 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
       {/* Save Filter Dialog */}
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Save Filter</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md shadow-xl border border-gray-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Save Filter</h3>
             <input
               type="text"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
               placeholder="Enter filter name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
             <div className="flex gap-3">
               <button
                 onClick={handleSaveFilter}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Save
               </button>
@@ -438,7 +438,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   setShowSaveDialog(false);
                   setFilterName('');
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
+                className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
               >
                 Cancel
               </button>

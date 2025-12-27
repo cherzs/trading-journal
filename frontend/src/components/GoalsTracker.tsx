@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, TrendingUp, Calendar, DollarSign, Percent, CheckCircle, XCircle } from 'lucide-react';
+import { Target, TrendingUp, DollarSign, Percent, CheckCircle, XCircle } from 'lucide-react';
 
 interface Goal {
   id: string;
@@ -53,7 +53,7 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
     // Update goal progress based on current performance
     const updatedGoals = goals.map(goal => {
       let current = 0;
-      
+
       switch (goal.type) {
         case 'profit':
           current = currentPerformance.total_pnl;
@@ -73,7 +73,7 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
       let status: Goal['status'] = 'active';
       const now = new Date();
       const endDate = new Date(goal.end_date);
-      
+
       if (now > endDate) {
         if (goal.type === 'drawdown') {
           status = current <= goal.target ? 'completed' : 'failed';
@@ -142,7 +142,7 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
 
   const getProgressPercentage = (goal: Goal) => {
     if (goal.target === 0) return 0;
-    
+
     if (goal.type === 'drawdown') {
       // For drawdown, we want to stay below target
       return Math.min(100, (goal.current / goal.target) * 100);
@@ -215,10 +215,10 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Trading Goals</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Trading Goals</h3>
         <button
           onClick={() => setShowAddGoal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Add Goal
         </button>
@@ -229,16 +229,18 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
         {goals.map(goal => {
           const progress = getProgressPercentage(goal);
           const isDrawdown = goal.type === 'drawdown';
-          
+
           return (
             <div
               key={goal.id}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  {getGoalIcon(goal.type)}
-                  <h4 className="font-medium text-gray-900">{goal.name}</h4>
+                  <div className="text-gray-600 dark:text-gray-400">
+                    {getGoalIcon(goal.type)}
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{goal.name}</h4>
                 </div>
                 <div className={`flex items-center gap-1 ${getStatusColor(goal.status)}`}>
                   {getStatusIcon(goal.status)}
@@ -248,40 +250,39 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
 
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Current:</span>
-                  <span className="font-medium">{formatValue(goal.current, goal.type)}</span>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Target:</span>
-                  <span className="font-medium">{formatValue(goal.target, goal.type)}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Current:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatValue(goal.current, goal.type)}</span>
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Progress:</span>
-                  <span className="font-medium">{progress.toFixed(1)}%</span>
+                  <span className="text-gray-600 dark:text-gray-400">Target:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatValue(goal.target, goal.type)}</span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Progress:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{progress.toFixed(1)}%</span>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      isDrawdown
-                        ? progress <= 100 ? 'bg-green-500' : 'bg-red-500'
-                        : progress >= 100 ? 'bg-green-500' : 'bg-blue-500'
-                    }`}
+                    className={`h-2 rounded-full transition-all duration-300 ${isDrawdown
+                      ? progress <= 100 ? 'bg-green-500' : 'bg-red-500'
+                      : progress >= 100 ? 'bg-green-500' : 'bg-blue-500'
+                      }`}
                     style={{ width: `${Math.min(100, progress)}%` }}
                   />
                 </div>
 
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>{goal.period}</span>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span className="capitalize">{goal.period}</span>
                   <span>{new Date(goal.end_date).toLocaleDateString()}</span>
                 </div>
               </div>
 
               {goal.status === 'active' && (
-                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
                   <button
                     onClick={() => {
                       setEditingGoal(goal);
@@ -295,13 +296,13 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
                       });
                       setShowAddGoal(true);
                     }}
-                    className="flex-1 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                    className="flex-1 px-3 py-1 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteGoal(goal.id)}
-                    className="flex-1 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    className="flex-1 px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                   >
                     Delete
                   </button>
@@ -313,8 +314,8 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
       </div>
 
       {goals.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Target className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <Target className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
           <p className="text-lg font-medium mb-2">No goals set yet</p>
           <p className="text-sm">Set trading goals to track your progress and stay motivated.</p>
         </div>
@@ -322,34 +323,34 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
 
       {/* Add/Edit Goal Modal */}
       {showAddGoal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md shadow-xl border border-gray-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
               {editingGoal ? 'Edit Goal' : 'Add New Goal'}
             </h3>
-            
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Goal Name
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="e.g., Monthly Profit Target"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Goal Type
                 </label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value as Goal['type']})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as Goal['type'] })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                 >
                   <option value="profit">Profit Target</option>
                   <option value="win_rate">Win Rate</option>
@@ -359,27 +360,27 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Target Value
                 </label>
                 <input
                   type="number"
                   step="any"
                   value={formData.target}
-                  onChange={(e) => setFormData({...formData, target: Number(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, target: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder={`Enter target ${getGoalUnit(formData.type)}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Time Period
                 </label>
                 <select
                   value={formData.period}
-                  onChange={(e) => setFormData({...formData, period: e.target.value as Goal['period']})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, period: e.target.value as Goal['period'] })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -390,26 +391,26 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start Date
                   </label>
                   <input
                     type="date"
                     value={formData.start_date}
-                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     End Date
                   </label>
                   <input
                     type="date"
                     value={formData.end_date}
-                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -418,7 +419,7 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
             <div className="flex gap-3 mt-6">
               <button
                 onClick={editingGoal ? handleUpdateGoal : handleAddGoal}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 {editingGoal ? 'Update' : 'Add'} Goal
               </button>
@@ -428,7 +429,7 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ currentPerformance }
                   setEditingGoal(null);
                   resetForm();
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
+                className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
               >
                 Cancel
               </button>

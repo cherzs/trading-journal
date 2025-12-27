@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Eye, Download, Trash2 } from 'lucide-react';
+import { Upload, Eye, Trash2 } from 'lucide-react';
 
 interface ScreenshotUploadProps {
   onUpload: (file: File) => void;
@@ -32,7 +32,7 @@ export const ScreenshotUpload: React.FC<ScreenshotUploadProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
@@ -65,10 +65,10 @@ export const ScreenshotUpload: React.FC<ScreenshotUploadProps> = ({
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
         Trade Screenshot
       </label>
-      
+
       {preview ? (
         <div className="relative">
           <img
@@ -80,28 +80,27 @@ export const ScreenshotUpload: React.FC<ScreenshotUploadProps> = ({
             <button
               type="button"
               onClick={() => window.open(preview, '_blank')}
-              className="p-2 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50"
+              className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
               title="View full size"
             >
-              <Eye className="w-4 h-4 text-gray-600" />
+              <Eye className="w-4 h-4 text-gray-600 dark:text-gray-300" />
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="p-2 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50"
+              className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
               title="Remove screenshot"
             >
-              <Trash2 className="w-4 h-4 text-red-600" />
+              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
             </button>
           </div>
         </div>
       ) : (
         <div
-          className={`relative border-2 border-dashed rounded-lg p-6 text-center ${
-            dragActive
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
+            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/10'
+            : 'border-gray-300 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500'
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -116,16 +115,16 @@ export const ScreenshotUpload: React.FC<ScreenshotUploadProps> = ({
             className="hidden"
             disabled={disabled}
           />
-          
-          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+
+          <Upload className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
           <div className="mt-4">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium text-blue-600 hover:text-blue-500">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">
                 Click to upload
               </span>{' '}
               or drag and drop
             </p>
-            <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, GIF up to 10MB</p>
           </div>
         </div>
       )}

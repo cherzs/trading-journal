@@ -59,7 +59,7 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
 
   const calculatePositionSize = () => {
     const { account_size, risk_per_trade, entry_price, stop_loss } = positionSizing;
-    
+
     if (entry_price > 0 && stop_loss > 0 && account_size > 0) {
       const risk_percent = risk_per_trade / 100;
       const risk_amount = account_size * risk_percent;
@@ -92,12 +92,12 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
     // Calculate recommended position size based on Kelly Criterion
     const winning_trades = trades.filter(t => t.is_winning_trade);
     const losing_trades = trades.filter(t => !t.is_winning_trade);
-    
+
     const win_rate = winning_trades.length / trades.length;
-    const avg_win = winning_trades.length > 0 
-      ? winning_trades.reduce((sum, t) => sum + t.profit_loss, 0) / winning_trades.length 
+    const avg_win = winning_trades.length > 0
+      ? winning_trades.reduce((sum, t) => sum + t.profit_loss, 0) / winning_trades.length
       : 0;
-    const avg_loss = losing_trades.length > 0 
+    const avg_loss = losing_trades.length > 0
       ? Math.abs(losing_trades.reduce((sum, t) => sum + t.profit_loss, 0) / losing_trades.length)
       : 0;
 
@@ -106,7 +106,7 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
 
     // Create portfolio heat map
     const symbolExposure: { [key: string]: { exposure: number; risk: number } } = {};
-    
+
     trades.forEach(trade => {
       if (!symbolExposure[trade.symbol]) {
         symbolExposure[trade.symbol] = { exposure: 0, risk: 0 };
@@ -146,23 +146,22 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Risk Management</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Risk Management</h3>
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-blue-600" />
-          <span className="text-sm text-gray-600">Portfolio Protection</span>
+          <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm text-gray-600 dark:text-gray-400">Portfolio Protection</span>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-slate-700">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('calculator')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'calculator'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'calculator'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
+              }`}
           >
             <div className="flex items-center gap-2">
               <Calculator className="w-4 h-4" />
@@ -171,11 +170,10 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
           </button>
           <button
             onClick={() => setActiveTab('portfolio')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'portfolio'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'portfolio'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
+              }`}
           >
             <div className="flex items-center gap-2">
               <TrendingDown className="w-4 h-4" />
@@ -188,12 +186,12 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
       {activeTab === 'calculator' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Position Sizing Calculator */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h4 className="text-lg font-medium text-gray-900 mb-4">Position Size Calculator</h4>
-            
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Position Size Calculator</h4>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Account Size
                 </label>
                 <div className="relative">
@@ -202,14 +200,14 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
                     type="number"
                     value={positionSizing.account_size}
                     onChange={(e) => setPositionSizing(prev => ({ ...prev, account_size: Number(e.target.value) }))}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white"
                     placeholder="10000"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Risk Per Trade (%)
                 </label>
                 <div className="relative">
@@ -219,7 +217,7 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
                     step="0.1"
                     value={positionSizing.risk_per_trade}
                     onChange={(e) => setPositionSizing(prev => ({ ...prev, risk_per_trade: Number(e.target.value) }))}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white"
                     placeholder="1"
                   />
                 </div>
@@ -227,7 +225,7 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Entry Price
                   </label>
                   <input
@@ -235,13 +233,13 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
                     step="0.01"
                     value={positionSizing.entry_price}
                     onChange={(e) => setPositionSizing(prev => ({ ...prev, entry_price: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white"
                     placeholder="0.00"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Stop Loss
                   </label>
                   <input
@@ -249,7 +247,7 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
                     step="0.01"
                     value={positionSizing.stop_loss}
                     onChange={(e) => setPositionSizing(prev => ({ ...prev, stop_loss: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white"
                     placeholder="0.00"
                   />
                 </div>
@@ -258,53 +256,53 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
           </div>
 
           {/* Results */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h4 className="text-lg font-medium text-gray-900 mb-4">Position Size Results</h4>
-            
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Position Size Results</h4>
+
             {positionSizing.entry_price > 0 && positionSizing.stop_loss > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Risk Amount</p>
-                    <p className="text-lg font-semibold text-blue-600">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Risk Amount</p>
+                    <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                       {formatCurrency(positionSizing.risk_amount)}
                     </p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Position Size</p>
-                    <p className="text-lg font-semibold text-green-600">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Position Size</p>
+                    <p className="text-lg font-semibold text-green-600 dark:text-green-400">
                       {formatCurrency(positionSizing.position_size)}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Number of Shares</p>
-                    <p className="text-lg font-semibold text-gray-900">
+                  <div className="bg-gray-50 dark:bg-slate-900 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Number of Shares</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
                       {positionSizing.shares.toLocaleString()}
                     </p>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Risk Percentage</p>
-                    <p className="text-lg font-semibold text-gray-900">
+                  <div className="bg-gray-50 dark:bg-slate-900 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Risk Percentage</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
                       {positionSizing.risk_percent.toFixed(2)}%
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 p-4 rounded-lg">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                    <p className="text-sm text-yellow-800">
+                    <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
                       <strong>Risk Warning:</strong> Never risk more than 2% of your account on a single trade.
                     </p>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Calculator className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Calculator className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p>Enter entry price and stop loss to calculate position size</p>
               </div>
             )}
@@ -314,76 +312,78 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
         <div className="space-y-6">
           {/* Portfolio Risk Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Exposure</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(portfolioRisk.total_exposure)}
-                  </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Exposure</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(portfolioRisk.total_exposure)}
+                    </p>
+                  </div>
+                  <DollarSign className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <DollarSign className="w-8 h-8 text-blue-600" />
               </div>
-            </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Max Risk Per Trade</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(portfolioRisk.max_risk_per_trade)}
-                  </p>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Max Risk Per Trade</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(portfolioRisk.max_risk_per_trade)}
+                    </p>
+                  </div>
+                  <Shield className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <Shield className="w-8 h-8 text-green-600" />
               </div>
-            </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Recommended Position</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {portfolioRisk.recommended_position_size.toFixed(1)}%
-                  </p>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Recommended Position</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {portfolioRisk.recommended_position_size.toFixed(1)}%
+                    </p>
+                  </div>
+                  <TrendingDown className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                <TrendingDown className="w-8 h-8 text-purple-600" />
               </div>
             </div>
           </div>
 
           {/* Portfolio Heat Map */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h4 className="text-lg font-medium text-gray-900 mb-4">Portfolio Exposure Heat Map</h4>
-            
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Portfolio Exposure Heat Map</h4>
+
             {portfolioRisk.portfolio_heat_map.length > 0 ? (
               <div className="space-y-3">
-                {portfolioRisk.portfolio_heat_map.map((item, index) => {
+                {portfolioRisk.portfolio_heat_map.map((item) => {
                   const riskLevel = getRiskLevel(item.percentage);
                   return (
-                    <div key={item.symbol} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={item.symbol} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className={`w-4 h-4 rounded-full ${riskLevel.bg}`} />
-                        <span className="font-medium text-gray-900">{item.symbol}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{item.symbol}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-sm text-gray-600">Exposure</p>
-                          <p className="font-medium">{formatCurrency(item.exposure)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Exposure</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(item.exposure)}</p>
                         </div>
-                        
+
                         <div className="text-right">
-                          <p className="text-sm text-gray-600">Risk</p>
-                          <p className="font-medium">{formatCurrency(item.risk)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Risk</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(item.risk)}</p>
                         </div>
-                        
+
                         <div className="text-right">
-                          <p className="text-sm text-gray-600">% of Portfolio</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">% of Portfolio</p>
                           <p className={`font-medium ${riskLevel.color}`}>
                             {item.percentage.toFixed(1)}%
                           </p>
                         </div>
-                        
+
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${riskLevel.bg} ${riskLevel.color}`}>
                           {riskLevel.level}
                         </span>
@@ -393,17 +393,17 @@ export const RiskManagement: React.FC<RiskManagementProps> = ({ trades, accountS
                 })}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <TrendingDown className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <TrendingDown className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p>No trades found for portfolio analysis</p>
               </div>
             )}
           </div>
 
           {/* Risk Guidelines */}
-          <div className="bg-blue-50 rounded-lg p-6">
-            <h4 className="text-lg font-medium text-blue-900 mb-3">Risk Management Guidelines</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+            <h4 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-3">Risk Management Guidelines</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
               <div>
                 <p className="font-medium mb-2">Position Sizing Rules:</p>
                 <ul className="space-y-1">

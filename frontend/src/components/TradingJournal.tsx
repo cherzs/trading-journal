@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp, Database } from 'lucide-react';
+import { Plus, BarChart3, Calendar, Filter, Search, RefreshCw, LogIn, Target, Shield, Download, FileText, User, LogOut, Settings, TrendingUp, Database, LayoutGrid, List, Moon, Sun } from 'lucide-react';
 import { Trade } from '../types/Trade';
 import { TradeForm } from './TradeForm';
 import { TradeList } from './TradeList';
+import { TradeGrid } from './TradeGrid';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 
 import { TradeTemplates } from './TradeTemplates';
@@ -14,6 +15,7 @@ import { Profile } from './Profile';
 import { tradeApi } from '../utils/api';
 import { analyticsUtils } from '../utils/analytics';
 import { logoutUser } from '../utils/auth';
+import { useTheme } from '../context/ThemeContext';
 
 interface TradingJournalProps {
   currentUser?: any;
@@ -39,6 +41,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
   const [showProfile, setShowProfile] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(propUser || null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (propUser) {
@@ -262,7 +266,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
   // Show authentication error or loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -270,13 +274,13 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-8 h-8 text-blue-600" />
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LogIn className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-6">{authError || 'Please log in to access the trading journal'}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Authentication Required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{authError || 'Please log in to access the trading journal'}</p>
           <div className="space-y-3">
             <button
               onClick={() => window.location.href = '/login'}
@@ -286,7 +290,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
             </button>
             <button
               onClick={checkAuthStatus}
-              className="w-full text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+              className="w-full text-gray-600 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             >
               Retry Connection
             </button>
@@ -297,76 +301,87 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-200">
       {/* Modern Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Trading Journal</h1>
-                <p className="text-sm text-gray-600">Track your trades and analyze your performance</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Trading Journal</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Track your trades and analyze your performance</p>
               </div>
             </div>
 
             {/* User Menu */}
-            <div className="relative">
+            <div className="flex items-center space-x-4">
+              {/* Theme Toggle */}
               <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={toggleTheme}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-all"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    {currentUser?.username || 'User'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {currentUser?.email || 'user@example.com'}
-                  </div>
-                </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              {/* Dropdown Menu */}
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                  <button
-                    onClick={() => {
-                      setShowProfile(true);
-                      setShowUserMenu(false);
-                    }}
-                    className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Profile Settings</span>
-                  </button>
-                  <button
-                    onClick={handleAddDemoData}
-                    className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <Database className="w-4 h-4" />
-                    <span>Add Demo Data</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setShowUserMenu(false);
-                    }}
-                    className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {currentUser?.username || 'User'}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {currentUser?.email || 'user@example.com'}
+                    </div>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-50">
+                    <button
+                      onClick={() => {
+                        setShowProfile(true);
+                        setShowUserMenu(false);
+                      }}
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Profile Settings</span>
+                    </button>
+                    <button
+                      onClick={handleAddDemoData}
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <Database className="w-4 h-4" />
+                      <span>Add Demo Data</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -375,10 +390,10 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total P&L</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total P&L</p>
                 <p className={`text-2xl font-bold ${analyticsUtils.getPnLColor(totalPnL)}`}>
                   {analyticsUtils.formatCurrency(totalPnL)}
                 </p>
@@ -386,19 +401,19 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Trades</p>
-                <p className="text-2xl font-bold text-gray-900">{trades.length}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Trades</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{trades.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Win Rate</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Win Rate</p>
                 <p className={`text-2xl font-bold ${analyticsUtils.getWinRateColor(winRate)}`}>
                   {analyticsUtils.formatPercentage(winRate)}
                 </p>
@@ -406,10 +421,10 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg Trade</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Trade</p>
                 <p className={`text-2xl font-bold ${analyticsUtils.getPnLColor(trades.length > 0 ? totalPnL / trades.length : 0)}`}>
                   {analyticsUtils.formatCurrency(trades.length > 0 ? totalPnL / trades.length : 0)}
                 </p>
@@ -419,14 +434,14 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
+        <div className="mb-6 sticky top-16 z-40 bg-gray-50 dark:bg-slate-900 pt-4 -mt-4">
+          <div className="border-b border-gray-200 dark:border-slate-700">
             <nav className="-mb-px flex space-x-8 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('trades')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'trades'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -437,8 +452,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               <button
                 onClick={() => setActiveTab('analytics')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'analytics'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -449,8 +464,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               <button
                 onClick={() => setActiveTab('templates')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'templates'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -461,8 +476,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               <button
                 onClick={() => setActiveTab('goals')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'goals'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -473,8 +488,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               <button
                 onClick={() => setActiveTab('risk')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'risk'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -485,8 +500,8 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               <button
                 onClick={() => setActiveTab('export')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'export'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -501,7 +516,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
         {activeTab === 'trades' && (
           <>
             {/* Controls */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 mb-6">
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   {/* Search */}
@@ -512,7 +527,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                       placeholder="Search trades..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     />
                   </div>
 
@@ -521,7 +536,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                     <select
                       value={filterStrategy}
                       onChange={(e) => setFilterStrategy(e.target.value)}
-                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="">All Strategies</option>
                       {strategies.map(strategy => (
@@ -532,7 +547,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                     <select
                       value={filterType}
                       onChange={(e) => setFilterType(e.target.value as 'all' | 'long' | 'short')}
-                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="all">All Types</option>
                       <option value="long">Long</option>
@@ -542,7 +557,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                     <select
                       value={filterResult}
                       onChange={(e) => setFilterResult(e.target.value as 'all' | 'win' | 'loss')}
-                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     >
                       <option value="all">All Results</option>
                       <option value="win">Winning</option>
@@ -557,19 +572,19 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
                     type="date"
                     value={dateRange.start}
                     onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                   />
                   <input
                     type="date"
                     value={dateRange.end}
                     onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* Advanced Filters */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
                 <AdvancedFilters
                   onApplyFilters={handleAdvancedFilters}
                   onClearFilters={() => { }}
@@ -579,14 +594,36 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
-                <div className="text-sm text-gray-600">
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Showing {filteredTrades.length} of {trades.length} trades
                 </div>
                 <div className="flex gap-2">
+                  <div className="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1 mr-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
+                        ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                      title="Grid View"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
+                        ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                      title="List View"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                  </div>
                   <button
                     onClick={fetchTrades}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Refresh
@@ -602,11 +639,17 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               </div>
             </div>
 
-            {/* Trade List */}
+            {/* Trade List / Grid */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
+            ) : viewMode === 'grid' ? (
+              <TradeGrid
+                trades={filteredTrades}
+                onEdit={handleEditTrade}
+                onDelete={handleDeleteTrade}
+              />
             ) : (
               <TradeList
                 trades={filteredTrades}
