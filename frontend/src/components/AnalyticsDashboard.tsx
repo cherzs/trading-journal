@@ -1,33 +1,36 @@
+
 import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
-  AlertTriangle, 
-  BarChart3, 
-  Calendar,
-  DollarSign,
-  Percent,
+import {
+  TrendingUp,
+  TrendingDown,
+  Target,
+  AlertTriangle,
+  BarChart3,
   Activity,
   Zap,
   Shield,
   Award
 } from 'lucide-react';
 import { analyticsApi, analyticsUtils } from '../utils/analytics';
-import { PerformanceMetrics, RiskMetrics, StrategyStats } from '../types/Trade';
+import { PerformanceMetrics, RiskMetrics, StrategyStats, EquityCurvePoint } from '../types/Trade';
+import { EquityChart } from './charts/EquityChart';
+import { StrategyChart } from './charts/StrategyChart';
+import { MonthlyChart } from './charts/MonthlyChart';
 
 interface AnalyticsDashboardProps {
   startDate?: string;
   endDate?: string;
 }
 
-export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ 
-  startDate, 
-  endDate 
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
+  startDate,
+  endDate
 }) => {
   const [performance, setPerformance] = useState<PerformanceMetrics | null>(null);
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
   const [strategyStats, setStrategyStats] = useState<Record<string, StrategyStats> | null>(null);
+  const [equityCurve, setEquityCurve] = useState<EquityCurvePoint[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,15 +40,22 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         setLoading(true);
         setError(null);
 
-        const [performanceData, riskData, strategyData] = await Promise.all([
+        const [performanceData, riskData, strategyData, equityData] = await Promise.all([
           analyticsApi.getPerformance(startDate, endDate),
           analyticsApi.getRiskMetrics(startDate, endDate),
-          analyticsApi.getStrategyPerformance(startDate, endDate)
+          analyticsApi.getStrategyPerformance(startDate, endDate),
+          analyticsApi.getEquityCurve(startDate, endDate)
         ]);
+
+        // Fetch monthly data separately as it might depend on year selector, defaulting to current year for now
+        const monthlyStats = await analyticsApi.getMonthlyPerformance(new Date().getFullYear());
 
         setPerformance(performanceData);
         setRiskMetrics(riskData);
         setStrategyStats(strategyData);
+        setEquityCurve(equityData);
+        setMonthlyData(monthlyStats.monthly_data);
+
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch analytics data');
       } finally {
@@ -151,6 +161,54 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
       </div>
 
+      {/* Main Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Equity Curve */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Equity Curve
+          </h3>
+          {equityCurve.length > 0 ? (
+            <EquityChart data={equityCurve} />
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400">
+              No trade data to display chart
+            </div>
+          )}
+        </div>
+
+        {/* Monthly Performance */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Monthly Performance
+          </h3>
+          {monthlyData ? (
+            <MonthlyChart data={monthlyData} />
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400">
+              No monthly data available
+            </div>
+          )}
+        </div>
+
+        {/* Strategy Distribution */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            Strategy Distribution (Volume)
+          </h3>
+          {strategyStats && Object.keys(strategyStats).length > 0 ? (
+            <StrategyChart data={strategyStats} />
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400">
+              No strategy data available
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Detailed Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Trade Statistics */}
@@ -235,6 +293,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     : '-'}
                 </span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Avg Risk Per Trade</span>
+                <span className="font-medium text-gray-900">
+                  {analyticsUtils.formatCurrency(riskMetrics.avg_risk_per_trade)}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -256,10 +320,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div className="text-sm text-gray-600">Longest Losing Streak</div>
           </div>
           <div className="text-center">
-            <div className={`text-3xl font-bold ${
-              performance.current_streak_type === 'winning' ? 'text-green-600' : 
+            <div className={`text-3xl font-bold ${performance.current_streak_type === 'winning' ? 'text-green-600' :
               performance.current_streak_type === 'losing' ? 'text-red-600' : 'text-gray-600'
-            }`}>
+              }`}>
               {performance.current_streak}
             </div>
             <div className="text-sm text-gray-600">Current Streak ({performance.current_streak_type})</div>
@@ -267,12 +330,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
       </div>
 
-      {/* Strategy Performance */}
+      {/* Strategy Performance Details Table */}
       {strategyStats && Object.keys(strategyStats).length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Strategy Performance
+            Strategy Performance Details
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -289,7 +352,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               </thead>
               <tbody>
                 {Object.entries(strategyStats).map(([strategy, stats]) => (
-                  <tr key={strategy} className="border-b border-gray-100">
+                  <tr key={strategy} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td className="py-3 px-4 font-medium text-gray-900">{strategy}</td>
                     <td className="py-3 px-4 text-right text-gray-600">{stats.total_trades}</td>
                     <td className={`py-3 px-4 text-right font-medium ${analyticsUtils.getWinRateColor(stats.win_rate)}`}>
@@ -318,4 +381,4 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       )}
     </div>
   );
-}; 
+};
