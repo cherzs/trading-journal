@@ -308,12 +308,12 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
           <div className="flex items-center justify-between h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Trading Journal</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Track your trades and analyze your performance</p>
+                <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px] md:max-w-none">Trading Journal</h1>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 hidden md:block">Track your trades and analyze your performance</p>
               </div>
             </div>
 
@@ -436,7 +436,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
         {/* Tab Navigation */}
         <div className="mb-6 sticky top-16 z-40 bg-gray-50 dark:bg-slate-900 pt-4 -mt-4">
           <div className="border-b border-gray-200 dark:border-slate-700">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto">
+            <nav className="-mb-px flex space-x-6 md:space-x-8 overflow-x-auto scrollbar-hide pb-1">
               <button
                 onClick={() => setActiveTab('trades')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'trades'
@@ -446,7 +446,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Trades
+                  <span className="whitespace-nowrap">Trades</span>
                 </div>
               </button>
               <button
@@ -458,7 +458,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  Analytics
+                  <span className="whitespace-nowrap">Analytics</span>
                 </div>
               </button>
               <button
@@ -470,7 +470,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
-                  Templates
+                  <span className="whitespace-nowrap">Templates</span>
                 </div>
               </button>
               <button
@@ -482,7 +482,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4" />
-                  Goals
+                  <span className="whitespace-nowrap">Goals</span>
                 </div>
               </button>
               <button
@@ -494,7 +494,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4" />
-                  Risk Management
+                  <span className="whitespace-nowrap">Risk Management</span>
                 </div>
               </button>
               <button
@@ -506,7 +506,7 @@ export const TradingJournal: React.FC<TradingJournalProps> = ({ currentUser: pro
               >
                 <div className="flex items-center gap-2">
                   <Download className="w-4 h-4" />
-                  Export & Reports
+                  <span className="whitespace-nowrap">Export & Reports</span>
                 </div>
               </button>
             </nav>

@@ -188,9 +188,6 @@ export const TradeTemplates: React.FC<TradeTemplatesProps> = ({
                 </button>
               </div>
             </div>
-
-
-
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex justify-between">
                 <span>Strategy:</span>
@@ -379,4 +376,4 @@ export const TradeTemplates: React.FC<TradeTemplatesProps> = ({
       }
     </div >
   );
-}; 
+};  

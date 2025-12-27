@@ -353,7 +353,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           {/* Filter Conditions */}
           <div className="space-y-3">
             {conditions.map((condition, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+              <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                 <select
                   value={condition.field}
                   onChange={(e) => updateCondition(index, 'field', e.target.value)}
